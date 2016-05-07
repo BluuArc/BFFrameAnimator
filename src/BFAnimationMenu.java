@@ -1,6 +1,8 @@
 /*
- * Name: Joshua Castor
+ * Created by: Joshua Castor
  * Description: Menu for the BF animation classes
+ * This program is licensed under the Creative Commons Attribution 3.0 United States License.
+ * Visit https://github.com/BluuArc/BFFrameAnimator for updates.
  */
 
 // Note the name of the class in the following line MUST
@@ -8,7 +10,10 @@
 
 public class BFAnimationMenu {
 	public static void main(String[] args) {
-		System.out.println("Begin Program Execution\n");
+		String license = "Welcome to BFFrameAnimator.\n";
+		license += "This program is licensed unter the Creative Commons Attribution 3.0 United States License.\n";
+		license += "Visit https://github.com/BluuArc/BFFrameAnimator for updates.\n";
+		System.out.println(license);
 		int input = 1;
 		String[] arguments; // ID, list, opacity
 		String menu, lastInput;
@@ -57,7 +62,7 @@ public class BFAnimationMenu {
 			} // end while input
 
 		} // end else
-		System.out.println("\nEnd Program Execution");
+		System.out.println("\nGoodbye.");
 	} // end main method
 
 	// method to get opacity or wiki parameter for arguments
@@ -134,6 +139,6 @@ public class BFAnimationMenu {
 				break;
 			}// end switch
 		}
-	}
+	}// end executeCommand
 
 } // end of class

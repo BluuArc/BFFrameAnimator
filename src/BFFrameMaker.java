@@ -1,14 +1,14 @@
 
 /*
- * Name: Joshua Castor
- * Net-ID: jcasto3
- * Time: Monday @ 1:00 PM - 1:50 PM
- * Started: December 21, 2015
+ * Created by: Joshua Castor
+ * Started: December 21, 2015 
  * Description: Using a CSV file, create frames from parameters on each line
  * 
  * important parts:  1 = part_count, 2,3 = x_pos,y_pos (relative to center of frame),
  *                   8,9 = img_x, img_y (top left corner of selection on spritesheet),
  * 
+ * This program is licensed under the Creative Commons Attribution 3.0 United States License.
+ * Visit https://github.com/BluuArc/BFFrameAnimator for updates.
  */
 
 import java.awt.Color;
