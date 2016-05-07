@@ -57,4 +57,5 @@ Download the BFFrameAnimator.jar in the /bin/ folder (or compile the classes in 
   * The Java class [AnimatedGifEncoder](http://www.java2s.com/Code/Java/2D-Graphics-GUI/AnimatedGifEncoder.htm) to handle GIF creation from one or more image files.
 
 ## Licensing
-The source code created by me (and not mentioned in the Credits/Sources section) is licensed under a [Creative Commons Attribution 3.0 United States License](http://creativecommons.org/licenses/by/3.0/us/). By using this code, you agree to the terms stated in the Creative Commons Attribution 3.0 United States License.
+
+<a rel="license" href="http://creativecommons.org/licenses/by/3.0/us/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/us/88x31.png" /></a><br />The source code created by me (and not mentioned in the Credits/Sources section) is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/3.0/us/">Creative Commons Attribution 3.0 United States License</a>. By using this code, you agree to the terms stated in the Creative Commons Attribution 3.0 United States License.
