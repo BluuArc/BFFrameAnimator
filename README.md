@@ -48,7 +48,7 @@ You can view what the file tree would look like in [this file](https://www.dropb
 To get the spritesheet and CSV files, you would have to download them from the Global or JP server; to get these files for multiple units, a combination of `wget` and a batch file would be best. The atk, idle, and move strips are generated via another program or you can make it yourself.
 
 ## How to Use
-Download the BFFrameAnimator.jar in the /bin/ folder (or compile the classes in the same folder into a jar file with BFAnimationMenu as the main class) to somewhere on your computer. After that, run it through the command prompt with `java -jar BFFrameAnimator.jar`. Be sure that the folders of the file tree (shown above) are already made, or you may encounter errors.
+Download the BFFrameAnimator.jar in the root folder (or compile the classes in the /bin/ folder into a jar file with BFAnimationMenu as the main class) to somewhere on your computer. After that, run it through the command prompt with `java -jar BFFrameAnimator.jar`. Be sure that the folders of the file tree (shown above) are already made, or you may encounter errors.
 
 ## Credits/Sources
 * Thanks to [Deathmax](https://github.com/Deathmax/) for telling me what each value in the CSV files correspond to
