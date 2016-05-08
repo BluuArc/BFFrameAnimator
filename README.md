@@ -59,3 +59,6 @@ Download the BFFrameAnimator.jar in the root folder (or compile the classes in t
 ## Licensing
 
 <a rel="license" href="http://creativecommons.org/licenses/by/3.0/us/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/us/88x31.png" /></a><br />The source code created by me (and not mentioned in the Credits/Sources section) is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/3.0/us/">Creative Commons Attribution 3.0 United States License</a>. By using this code, you agree to the terms stated in the Creative Commons Attribution 3.0 United States License.
+
+## Other Notes
+This project was started on December 21, 2015, my 18th birthday. It's gone through many, many revisions between then and the first time I put it on Github (May, 7, 2016). I'm sure that it will be more helpful here for others to view and use.
