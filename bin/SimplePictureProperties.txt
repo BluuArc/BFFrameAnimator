@@ -1,3 +1,0 @@
-#Properties for the Simple Picture class
-#Fri May 06 16:44:35 CDT 2016
-mediaDirectory=C\:\\Users\\Castor\\Dropbox\\Private\\Images\\BF\\References\\Raw Game Data\\_units\\animation
