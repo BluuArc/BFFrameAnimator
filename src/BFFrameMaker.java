@@ -55,8 +55,8 @@ public class BFFrameMaker {
 		} else if (args.length == 2) {
 			// parse parameters
 			/*
-			 * sample input java BFFrameMaker [list.txt] [opacity] [list.txt] =
-			 * file of unit IDs, one ID per line [opacity] = option for opacity;
+			 * sample input java BFFrameMaker [list.txt] [opacity] 
+			 * [list.txt] = file of unit IDs, one ID per line [opacity] = option for opacity;
 			 * 1 for true, 0 for false
 			 */
 
@@ -70,8 +70,9 @@ public class BFFrameMaker {
 		} else if (args.length == 3) {
 			// make 1 ID
 			/*
-			 * sample input java BFFrameMaker [ID] [list.txt] [opacity] [ID] =
-			 * unit ID to make [list.txt] = file of unit IDs, one ID per line
+			 * sample input java BFFrameMaker [ID] [list.txt] [opacity] 
+			 * [ID] = unit ID to make 
+			 * [list.txt] = file of unit IDs, one ID per line
 			 * [opacity] = option for opacity; 1 for true, 0 for false
 			 */
 			// set parameters
@@ -125,10 +126,7 @@ public class BFFrameMaker {
 
 			System.out.println("\n[Parsing CSV Files for " + unitID + "]");
 			System.out.println("Parsing main CSV File");
-			int[][] frames = new int[numFrames[0]][]; // second set of brackets
-														// is for referencing
-														// what's in the inner
-														// array
+			int[][] frames = new int[numFrames[0]][]; // reference: frames[frame number][parameters for frame]
 			parseCSV(fNames[0], frames);
 
 			System.out.println("Parsing idle CSV File");
