@@ -104,11 +104,11 @@ public class BFStripMaker {
 
 			System.out.println("\n[Parsing CSV Files for " + unitID + "]");
 			System.out.println("Parsing main CSV File");
-			int[][] frames = new int[numFrames[0]][]; // reference: frames[frame number][parameters for frame]
+			int[][] frames = new int[numFrames[0]][]; // reference: frames[frame/line number][parameters for frame]
 			BFFrameMaker.parseCSV(fNames[0], frames);
 
 			System.out.println("Parsing idle CSV File");
-			int[][] idle = new int[numFrames[1]][];
+			int[][] idle = new int[numFrames[1]][]; // reference: idle[line number][parameters for line]
 			BFFrameMaker.parseCSV(fNames[1], idle);
 
 			System.out.println("Parsing move CSV File");
@@ -129,9 +129,9 @@ public class BFStripMaker {
 				for (int i = 0; i < idle.length; i++) { // for each line
 					frame[i] = makeFrame(unitID, sSheet, frames, idle, i);
 				}
-				makeNewFrame(frame, unitID, idle, "1idle");
+				makeNewFrame(frame, unitID, idle, "idle");
 				// System.out.printf("Making idle GIF for " + unitID + "...");
-				makeStrip(dirGif, unitID, "1idle", idle);
+				makeStrip(dirGif, unitID, "idle", idle);
 			} else {
 				// error[0] = true;
 				System.out.println("No idle CSV file found for " + unitID + ".");
@@ -143,10 +143,10 @@ public class BFStripMaker {
 				for (int i = 0; i < move.length; i++) { // for each line
 					frame[i] = makeFrame(unitID, sSheet, frames, move, i);
 				}
-				makeNewFrame(frame, unitID, move, "2move");
+				makeNewFrame(frame, unitID, move, "move");
 				// System.out.println("Making movement GIF for " + unitID +
 				// "...");
-				makeStrip(dirGif, unitID, "2move", move);
+				makeStrip(dirGif, unitID, "move", move);
 			} else {
 				// error[1] = true;
 				System.out.println("No movement CSV file found for " + unitID + ".");
@@ -158,10 +158,10 @@ public class BFStripMaker {
 				for (int i = 0; i < atk.length; i++) { // for each line
 					frame[i] = makeFrame(unitID, sSheet, frames, atk, i);
 				}
-				makeNewFrame(frame, unitID, atk, "3atk");
+				makeNewFrame(frame, unitID, atk, "atk");
 				// System.out.println("Making attack GIF for " + unitID +
 				// "...");
-				makeStrip(dirGif, unitID, "3atk", atk);
+				makeStrip(dirGif, unitID, "atk", atk);
 			} else {
 				// error[2] = true;
 				System.out.println("No attack CSV file found for " + unitID + ".");
@@ -223,6 +223,7 @@ public class BFStripMaker {
 		int h = frame[11 + (currentPart * 11)];
 		
 		double opacity = opac / 100.0;
+		
 		if (rotate < 0)
 			rotate = rotate + 360;
 		double angle = Math.toRadians((double) (rotate));
@@ -279,7 +280,7 @@ public class BFStripMaker {
 				else
 					targetY = offsetY + y;
 				
-				//TODO rotation
+				//TODO rotation, opacity
 
 				// System.out.println("Coordinates are (" + offsetX + "," +
 				// offsetY + ")");
@@ -293,19 +294,31 @@ public class BFStripMaker {
 				a = sourcePix.getAlpha();
 
 				if((blendMode == 1) && (a != 0) && opacity > 0 && a > 0){
+					//blend code based off of this: http://pastebin.com/vXc0yNRh
 					int pixval = (r + g + b) / 3;
+					r += pixval;
+					g += pixval;
+					b += pixval;
+					
+					if(r > 255)
+						r = 255;
+					if(g > 255)
+						g = 255;
+					if(b > 255)
+						b = 255;
 					targetPix.setColor(new Color(r, g, b));
 					if(targetPix.getAlpha() == 0)
-						targetPix.setAlpha(pixval);
+						targetPix.setAlpha((int)(pixval * opacity));
 				}else if(opacity > 0 && a > 0){
 					targetPix.setColor(new Color(r, g, b));
 					if(targetPix.getAlpha() == 0 || a > targetPix.getAlpha())
-						targetPix.setAlpha(a);
+						targetPix.setAlpha((int)(a * opacity));
 				}
 				
 			} // end y
 		} // end x
 		
+		//necessary to keep proper alpha values
 		part.getGraphics().drawImage(tempPart.getImage(), 0, 0, null);
 
 		return part;
@@ -327,10 +340,10 @@ public class BFStripMaker {
 			Picture2 part = new Picture2(w, h);
 			BFFrameMaker.copyPicture(frame[i], bounds[2], bounds[0], part, 0, 0, w, h);
 			// save frame as ./frame_<currentFrame>/part_<currentPart>.jpg
-			// System.out.println("Saving frame number " + currentFrame +
-			// "...");
+
 			String fName = FileChooser.getMediaDirectory() + "\\unit_" + unitID + "_" + type + "-F" + i	+ ".png";
 			part.write(fName);
+			//frame[i].write(fName);
 			BFFrameMaker.printProgress("Cropping and saving frames. Status: ", BFFrameMaker.getPercent(i + 1, frame.length));
 		}
 	}// end makeNewFrame method
@@ -352,7 +365,7 @@ public class BFStripMaker {
 					// get current pixels
 					p = part[i].getPixel(x, y);
 					// int a = p.getAlpha();
-					Color c = p.getColor();
+					//Color c = p.getColor();
 					// save y coordinate if it's lower than the previously saved
 					// coord
 					// and if there's something there (alpha !- 0)
@@ -361,6 +374,11 @@ public class BFStripMaker {
 				} // end y
 			} // end x
 		} // end i
+
+		if ((upperCoord % 10) != 0)
+			upperCoord = ((upperCoord - 9) / 10) * 10;
+		else
+			upperCoord = upperCoord - 10;
 
 		if (upperCoord < 0)
 			upperCoord = 0;
@@ -387,7 +405,7 @@ public class BFStripMaker {
 					// get current pixels
 					p = part[i].getPixel(x, y);
 					// int a = p.getAlpha();
-					Color c = p.getColor();
+					//Color c = p.getColor();
 					// save y coordinate if it's lower than the previously saved
 					// coord
 					// and if there's something there (alpha !- 0)
@@ -397,9 +415,14 @@ public class BFStripMaker {
 			} // end x
 		} // end i
 
+		if ((lowerCoord % 10) != 0)
+			lowerCoord = ((lowerCoord + 9) / 10) * 10;
+		else
+			lowerCoord = lowerCoord + 10;
+		
 		if (lowerCoord > maxH)
 			lowerCoord = maxH;
-
+		
 		return lowerCoord;
 	}// end getLowerBound method
 
@@ -419,7 +442,7 @@ public class BFStripMaker {
 					// get current pixels
 					p = part[i].getPixel(x, y);
 					// int a = p.getAlpha();
-					Color c = p.getColor();
+					//Color c = p.getColor();
 					// save y coordinate if it's lower than the previously saved
 					// coord
 					// and if there's something there (alpha !- 0)
@@ -429,6 +452,11 @@ public class BFStripMaker {
 			} // end x
 		} // end i
 
+		if ((upperCoord % 10) != 0)
+			upperCoord = ((upperCoord - 9) / 10) * 10;
+		else
+			upperCoord = upperCoord - 10;
+		
 		if (upperCoord < 0)
 			upperCoord = 0;
 
@@ -454,7 +482,7 @@ public class BFStripMaker {
 					// get current pixels
 					p = part[i].getPixel(x, y);
 					// int a = p.getAlpha();
-					Color c = p.getColor();
+					//Color c = p.getColor();
 					// save y coordinate if it's lower than the previously saved
 					// coord
 					// and if there's something there (alpha !- 0)
@@ -463,6 +491,11 @@ public class BFStripMaker {
 				} // end y
 			} // end x
 		} // end i
+
+		if ((lowerCoord % 10) != 0)
+			lowerCoord = ((lowerCoord + 9) / 10) * 10;
+		else
+			lowerCoord = lowerCoord + 10;
 
 		if (lowerCoord > maxW)
 			lowerCoord = maxW;
@@ -497,7 +530,7 @@ public class BFStripMaker {
 
 	// method to make an animation strip
 	public static void makeStrip(String dirGif, String unitID, String type, int[][] csvFile){
-		String fName = dirGif + "\\unit_" + unitID + "_" + type;
+		String fName = dirGif + "\\unit_" + type + "_" + unitID;
 		fName = fName + ".png";
 		System.out.println("Save Path:" + fName);
 	
