@@ -36,6 +36,10 @@ public class BFStripAnimator {
 		if (!useArgs) {
 			wikiOption = SimpleInput
 					.getIntNumber("What are you making? (0 for all, 1 for wiki, anything else to exit)");
+			if(wikiOption != 0 && wikiOption != 1){
+				System.out.println("Exiting application.");
+				return;
+			}
 			wiki = BFFrameMaker.setOpacity(wikiOption);
 
 			if (wiki) {
@@ -76,6 +80,12 @@ public class BFStripAnimator {
 			listFile = args[1];
 			wikiOption = Integer.parseInt(args[2]);
 			wiki = BFFrameMaker.setOpacity(wikiOption);
+		}
+		
+		//exit
+		if(unitIDs[0].equals("-1")){
+			System.out.println("Exiting application.");
+			return;
 		}
 
 		// set directory
@@ -306,7 +316,7 @@ public class BFStripAnimator {
 					+ ".png";
 			frame[i].write(fName);
 			BFFrameMaker.printProgress("Cropping and saving frames. Status: ",
-					BFFrameMaker.getPercent(i, frame.length));
+					BFFrameMaker.getPercent(i+1, frame.length));
 		}
 
 	}// end makeNewFrameWiki method

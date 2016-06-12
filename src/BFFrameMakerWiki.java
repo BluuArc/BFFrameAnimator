@@ -37,6 +37,10 @@ public class BFFrameMakerWiki {
 
 			opacOption = SimpleInput
 					.getIntNumber("Would you like to use opacity? (0 for no, 1 for yes, anything else to exit)");
+			if(opacOption != 0 && opacOption != 1){
+				System.out.println("Exiting application.");
+				return;
+			}
 			useOpacity = BFFrameMaker.setOpacity(opacOption);
 
 			if (useOpacity)
@@ -76,6 +80,12 @@ public class BFFrameMakerWiki {
 			listFile = args[1];
 			opacOption = Integer.parseInt(args[2]);
 			useOpacity = BFFrameMaker.setOpacity(opacOption);
+		}
+		
+		//exit
+		if(unitIDs[0].equals("-1")){
+			System.out.println("Exiting application.");
+			return;
 		}
 
 		System.out.println("Preparing to make " + unitIDs.length + " GIFs...");
