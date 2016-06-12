@@ -42,6 +42,10 @@ public class BFFrameMaker {
 
 			opacOption = SimpleInput
 					.getIntNumber("Would you like to use opacity? (0 for no, 1 for yes, anything else to exit)");
+			if(opacOption != 0 && opacOption != 1){
+				System.out.println("Exiting application.");
+				return;
+			}
 			useOpacity = setOpacity(opacOption);
 
 			if (useOpacity)
@@ -80,6 +84,12 @@ public class BFFrameMaker {
 			listFile = args[1];
 			opacOption = Integer.parseInt(args[2]);
 			useOpacity = setOpacity(opacOption);
+		}
+		
+		//exit
+		if(unitIDs[0].equals("-1")){
+			System.out.println("Exiting application.");
+			return;
 		}
 
 		// set directory
@@ -411,30 +421,21 @@ public class BFFrameMaker {
 	}// end convertToInt method
 
 	// method to save copy a current part from a spritesheet to a picture
-	@SuppressWarnings("unused")
 	public static Picture2 copyPart(Picture2 sSheet, Picture2 part, int[] frame, int currentPart, boolean useOpacity) {
-		int spriteX = frame[8 + (currentPart * 11)];
-		int spriteY = frame[9 + (currentPart * 11)];
 		int frameX = frame[2 + (currentPart * 11)];
 		int frameY = frame[3 + (currentPart * 11)];
+		int flip = frame[4 + (currentPart * 11)];
+		int blendMode = frame[5 + (currentPart * 11)];
+		int opac = frame[6 + (currentPart * 11)];
+		int rotate = frame[7 + (currentPart * 11)];
+		int spriteX = frame[8 + (currentPart * 11)];
+		int spriteY = frame[9 + (currentPart * 11)];
 		int w = frame[10 + (currentPart * 11)];
 		int h = frame[11 + (currentPart * 11)];
-		int flip = frame[4 + (currentPart * 11)];
-		int opac = frame[6 + (currentPart * 11)];
+		
 		double opacity = opac / 100.0;
-		int rotate = frame[7 + (currentPart * 11)];
-		if (rotate < 0)
-			rotate = rotate + 360;
-		double angle = Math.toRadians((double) (rotate));
-		double sin = Math.sin(angle);
-		double cos = Math.cos(angle);
-		double x0 = 0.5 * (w - 1); // point to rotate about
-		double y0 = 0.5 * (h - 1); // center of part
 
-		// radians = degrees * pi/180
-		// reference for rotation:
-		// http://introcs.cs.princeton.edu/java/31datatype/Rotation.java.html
-
+		Picture2 tempPart = new Picture2(part.getWidth(),part.getHeight());
 		Pixel sourcePix;
 		Pixel targetPix;
 
@@ -444,8 +445,9 @@ public class BFFrameMaker {
 		// System.out.println("Starting coordinates on frame are (" + offsetX +
 		// "," + offsetY + ")");
 
+		int x = 0;
 		int y = 0;
-		for (int x = 0; x < w; x++) {
+		for (x = 0; x < w; x++) {
 			for (y = 0; y < h; y++) {
 				// get current pixels
 				int sourceX = spriteX + x;
@@ -456,61 +458,34 @@ public class BFFrameMaker {
 					sourceY = sSheet.getHeight() - 1;
 				sourcePix = sSheet.getPixel(sourceX, sourceY);
 
-				int targetX;
-				int targetY;
+				//set target pixels
+				int targetX = offsetX;
+				int targetY = offsetY;
+
+				targetX += x;
+				targetY += y;
+				
 				/*
-				 * //rotation if(rotate != 0){ double a1 = x - x0; double b1 = y
-				 * - y0; int xx = (int)(+a1 * cos - b1 * sin + x0); int yy =
-				 * (int)(+a1 * sin + b1 * cos + y0); targetX = (int)(offsetX +
-				 * (x0 - xx)); targetY = (int)(offsetY + (y0 - yy)); }else{
-				 */
+				//set flip
+				//horizontal
 				if (flip == 1 || flip == 3)
-					targetX = offsetX + (w - 1 - x);
+					targetX += (w - 1 - x);
 				else
-					targetX = offsetX + x;
+					targetX += x;
 
+				//vertical
 				if (flip == 2 || flip == 3)
-					targetY = offsetY + (h - 1 - y);
+					targetY += (h - 1 - y);
 				else
-					targetY = offsetY + y;
-
-				/*
-				 * switch(rotate){ case 90: targetX = offsetX + (h - 1 - y);
-				 * break;
-				 * 
-				 * case 180: targetX = offsetX + (w - 1 - x); targetY = offsetY
-				 * + (h - 1 - y); break;
-				 * 
-				 * case 270: targetY = offsetY + (w - 1 - x); break;
-				 * 
-				 * default: if(flip == 1 || flip == 3 || rotate == 270){ offsetX
-				 * = offsetX + (w - 1 - x); }else{ offsetX = offsetX + x; }
-				 * 
-				 * if(flip == 2 || flip == 3 || rotate == 90){ offsetY = offsetY
-				 * + (h - 1 - y); }else{ offsetY = offsetY + y; } break; }
-				 */
+					targetY += y;
+				*/
 
 				// System.out.println("Coordinates are (" + offsetX + "," +
 				// offsetY + ")");
 
-				targetPix = part.getPixel(targetX, targetY);
+				targetPix = tempPart.getPixel(targetX, targetY);
 
 				/*
-				 * Consider this:
-				 * 
-				 * Source:
-				 * http://stackoverflow.com/questions/2049230/convert-rgba-color
-				 * -to-rgb
-				 * 
-				 * Source => Target = (BGColor + Source) = Target.R = ((1 -
-				 * Source.A) * BGColor.R) + (Source.A * Source.R) Target.G = ((1
-				 * - Source.A) * BGColor.G) + (Source.A * Source.G) Target.B =
-				 * ((1 - Source.A) * BGColor.B) + (Source.A * Source.B)
-				 * 
-				 * Have it first copy the pixel with alpha, and then apply
-				 * opacity if option is used -> Ignore copying source alpha at
-				 * bottom if-if statment?
-				 */
 				int r, g, b;
 				if (useOpacity) {
 					r = (int) (sourcePix.getRed() * opacity);
@@ -521,8 +496,41 @@ public class BFFrameMaker {
 					g = sourcePix.getGreen();
 					b = sourcePix.getBlue();
 				}
-
-				if (sourcePix.getAlpha() > 150 && opacity > 0) { // copy pixel
+				 */
+				
+				int r, g, b, a;
+				r = sourcePix.getRed();
+				g = sourcePix.getGreen();
+				b = sourcePix.getBlue();
+				a = sourcePix.getAlpha();
+				
+				int targetAlpha;
+				if(useOpacity)
+					targetAlpha = (int)(a * opacity);
+				else
+					targetAlpha = a;
+				
+				//TODO: implement useOpacity option again
+				if((blendMode == 1) && opacity > 0 && a > 0){
+					//blend code based off of this: http://pastebin.com/vXc0yNRh
+					int pixval = (r + g + b) / 3;
+					r += pixval;
+					g += pixval;
+					b += pixval;
+					
+					if(r > 255)
+						r = 255;
+					if(g > 255)
+						g = 255;
+					if(b > 255)
+						b = 255;
+					
+					if(useOpacity)
+						targetAlpha = (int)(pixval * opacity);
+					//else
+					//	targetAlpha = pixval;
+				}
+				if (targetAlpha > 150 && opacity > 0) { // copy pixel
 																	// if
 																	// there's
 																	// something
@@ -530,10 +538,10 @@ public class BFFrameMaker {
 																	// source
 																	// pixel
 					targetPix.setColor(new Color(r, g, b));
-					if (targetPix.getAlpha() < 90) // copy transparency if there
+					if (a > targetPix.getAlpha())//targetPix.getAlpha() == 90) // copy transparency if there
 													// is nothing in that pixel
 													// in the target image
-						targetPix.setAlpha(sourcePix.getAlpha());
+						targetPix.setAlpha(targetAlpha);
 					/*
 					 * }else if (targetPix.getAlpha() < 90){// if there is
 					 * nothing in both the source and target pixel, set it this
@@ -543,6 +551,59 @@ public class BFFrameMaker {
 				} // end if
 			} // end y
 		} // end x
+		
+
+		//flip image
+		if(flip != 0 || flip != 3){
+			//temporary copy
+			Picture2 temp = new Picture2(tempPart.getWidth(), tempPart.getHeight());
+			
+			for (x = 0; x < w; x++) {
+				for (y = 0; y < h; y++) {
+					int sourceX = offsetX + x;
+					int sourceY = offsetY + y;
+					sourcePix = tempPart.getPixel(sourceX, sourceY);
+					
+					//set target pixels
+					int targetX = offsetX;
+					int targetY = offsetY;
+					
+					//horizontal flip
+					if (flip == 1)
+						targetX += (w - 1 - x);
+					else
+						targetX += x;
+
+					//vertical flip
+					if (flip == 2)
+						targetY += (h - 1 - y);
+					else
+						targetY += y;
+					
+					targetPix = temp.getPixel(targetX, targetY);
+					
+					targetPix.setColor(sourcePix.getColor());
+					targetPix.setAlpha(sourcePix.getAlpha());
+					
+				}//end y
+			}//end x
+
+			tempPart = temp;
+		}//end flip
+		
+		
+		//flip vertical and horizontal
+		if(flip == 3)
+			tempPart = BFStripMaker.rotateImage(180, tempPart, offsetX + (w/2), offsetY + (h/2));
+
+
+		if(rotate != 0){
+			tempPart = BFStripMaker.rotateImage(rotate, tempPart, offsetX + (w/2), offsetY + (h/2));
+		}//end rotate
+		
+		//necessary to keep proper alpha values
+		part.getGraphics().drawImage(tempPart.getImage(), 0, 0, null);
+
 
 		return part;
 	}// end copyPart method
@@ -633,7 +694,7 @@ public class BFFrameMaker {
 		part.setAllPixelsToAColor(new Color(253, 237, 43));
 		part.setAllPixelsToAnAlpha(255);
 
-		printProgress("Copying framees from spritesheet. Status: ", getPercent(counter, csvFile.length));
+		printProgress("Copying frames from spritesheet. Status: ", getPercent(counter, csvFile.length));
 
 		// System.out.println("Dimensions of frame (WxH): " + width + "x" +
 		// height);
@@ -647,7 +708,7 @@ public class BFFrameMaker {
 			part = copyPart(sSheet, part, frame, (numParts - 1 - f), useOpacity);
 		}
 
-		printProgress("Copying framees from spritesheet. Status: ", getPercent(counter + 1, csvFile.length));
+		printProgress("Copying frames from spritesheet. Status: ", getPercent(counter + 1, csvFile.length));
 
 		return part;
 	}// end makeFrame method
