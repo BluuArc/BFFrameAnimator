@@ -2,3 +2,4 @@
 bin/SimplePictureProperties.txt
 .settings/*
 .classpath
+.project
