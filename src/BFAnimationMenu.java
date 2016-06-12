@@ -13,20 +13,23 @@ public class BFAnimationMenu {
 		String license = "Welcome to BFFrameAnimator.\n";
 		license += "This program is licensed unter the Creative Commons Attribution 3.0 United States License.\n";
 		license += "Visit https://github.com/BluuArc/BFFrameAnimator for updates.\n";
+		license += "This version was last updated on June 12, 2016.";
 		System.out.println(license);
 		int input = 1;
 		String[] arguments; // ID, list, opacity
 		String menu, lastInput;
 
-		menu = "what would you like to do?\n";
+		menu = "What would you like to do?\n";
 		menu += " 1. Make all 3 animations from spritesheets\n";
 		menu += " 2. Make wiki GIFs from spritesheets\n";
 		menu += " 3. Make GIFS from animation strips\n";
+		menu += " 4. Create animation strips from spritesheets\n";
 		menu += "Enter 0 to exit.\n";
 
 		input = SimpleInput.getIntNumber("Are you making more than 1 unit? (0 for no, 1 for yes)", 0, 1);
 		System.out.println(
 				"Choose the list.txt file that contains all the unit IDs. Its directory is a baseline for all file operations");
+		//making more than one unit
 		if (input == 1) {
 			arguments = new String[2]; // list, opacity
 
@@ -39,7 +42,7 @@ public class BFAnimationMenu {
 			// while loop to make multiple versions of the same units
 			while (input != 0) {
 				lastInput = "Your last input was [" + input + " " + arguments[1] + "]";
-				input = SimpleInput.getIntNumber(menu + lastInput, 0, 3);
+				input = SimpleInput.getIntNumber(menu + lastInput, 0, 4);
 				executeCommand(input, arguments);
 			} // end while input
 		} else {// if only making 1 unit
@@ -57,12 +60,13 @@ public class BFAnimationMenu {
 				arguments[0] = Integer.toString(SimpleInput.getIntNumber("What unit do you want to make?"));
 
 				// get option
-				input = SimpleInput.getIntNumber(menu + lastInput, 0, 3);
+				input = SimpleInput.getIntNumber(menu + lastInput, 0, 4);
 				executeCommand(input, arguments);
 			} // end while input
 
 		} // end else
 		System.out.println("\nGoodbye.");
+		return;
 	} // end main method
 
 	// method to get opacity or wiki parameter for arguments
@@ -80,9 +84,14 @@ public class BFAnimationMenu {
 
 	// method to execute commands, goes with the menu in main()
 	public static void executeCommand(int input, String arguments[]) {
+		//more than one unit
+		//indices: list, opacity
+		String list;
 		if (arguments.length == 2) {
+			list = arguments[0];
 			switch (input) {
 			case 1:
+				//opacity option
 				arguments[1] = getOption(1);
 				try {
 					BFFrameMaker.main(arguments);
@@ -91,6 +100,7 @@ public class BFAnimationMenu {
 				}
 				break;
 			case 2:
+				//opacity option
 				arguments[1] = getOption(1);
 				try {
 					BFFrameMakerWiki.main(arguments);
@@ -99,6 +109,7 @@ public class BFAnimationMenu {
 				}
 				break;
 			case 3:
+				//all or wiki option
 				arguments[1] = getOption(2);
 				try {
 					BFStripAnimator.main(arguments);
@@ -106,10 +117,22 @@ public class BFAnimationMenu {
 					e.printStackTrace();
 				}
 				break;
+			case 4:
+				arguments = new String[1];
+				arguments[0] = list;
+				try {
+					BFStripMaker.main(arguments);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				break;
 			default:
 				break;
 			}// end switch
-		} else {// arguments.length == 3
+		} else {// arguments.length == 3, only one unit
+			// indices: ID, list, opacity
+			String unitID = arguments[0];
+			list = arguments[1];
 			switch (input) {
 			case 1:
 				arguments[2] = getOption(1);
@@ -131,6 +154,16 @@ public class BFAnimationMenu {
 				arguments[2] = getOption(2);
 				try {
 					BFStripAnimator.main(arguments);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				break;
+			case 4:
+				arguments = new String[2];
+				arguments[0] = unitID;
+				arguments[1] = list;
+				try {
+					BFStripMaker.main(arguments);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
