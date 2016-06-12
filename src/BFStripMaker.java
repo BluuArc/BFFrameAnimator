@@ -23,6 +23,8 @@ public class BFStripMaker {
 		String dir, dirFrame, dirGif;
 		String listFile = "";
 		
+		if (args.length != 0)
+			useArgs = true;
 
 		// if no command line parameters are given
 		if (!useArgs) {
@@ -32,7 +34,7 @@ public class BFStripMaker {
 		} else if (args.length == 1) {
 			// parse parameters
 			/*
-			 * sample input java BFFrameMaker [list.txt] 
+			 * sample input java BFStripMaker [list.txt] 
 			 * [list.txt] = file of unit IDs, one ID per line 
 			 */
 
@@ -44,7 +46,7 @@ public class BFStripMaker {
 		} else if (args.length == 2) {
 			// make 1 ID
 			/*
-			 * sample input java BFFrameMaker [ID] [list.txt] 
+			 * sample input java BFStripMaker [ID] [list.txt] 
 			 * [ID] = unit ID to make 
 			 * [list.txt] = file of unit IDs, one ID per line
 			 */
@@ -52,12 +54,19 @@ public class BFStripMaker {
 			unitIDs[0] = args[0];
 			listFile = args[1];
 		}
+		
+		//exit
+		if(unitIDs[0].equals("-1")){
+			System.out.println("Exiting application.");
+			return;
+		}
+			
 			
 		// set directory
 		System.out.println("Preparing to make " + unitIDs.length + " animation strips...");
 		
 		if (!useArgs) {
-			System.out.println("Choose directory that contains the units sorted by IDs.");
+			System.out.println("Choose directory that contains the units sorted by IDs. Strip will be saved here.");
 			dir = FileChooser.pickAFile();
 			dir = BFFrameMaker.getDirectory(dir);
 
@@ -68,7 +77,7 @@ public class BFStripMaker {
 			// dirFrame = getDirectory(dirFrame);
 
 			// set GIF directory
-			System.out.println("Choosing target directory for GIFs...");
+			System.out.println("Choosing target directory for frames...");
 			// System.out.println(" Frames will be in GIFDirectory\frames");
 			dirGif = FileChooser.pickAFile();
 			dirGif = BFFrameMaker.getDirectory(dirGif);
@@ -125,7 +134,7 @@ public class BFStripMaker {
 				}
 				makeNewFrame(frame, unitID, idle, "idle");
 				// System.out.printf("Making idle GIF for " + unitID + "...");
-				makeStrip(dirGif, unitID, "idle", idle);
+				makeStrip(dirGif, dir, unitID, "idle", idle);
 			} else {
 				// error[0] = true;
 				System.out.println("No idle CSV file found for " + unitID + ".");
@@ -140,7 +149,7 @@ public class BFStripMaker {
 				makeNewFrame(frame, unitID, move, "move");
 				// System.out.println("Making movement GIF for " + unitID +
 				// "...");
-				makeStrip(dirGif, unitID, "move", move);
+				makeStrip(dirGif, dir, unitID, "move", move);
 			} else {
 				// error[1] = true;
 				System.out.println("No movement CSV file found for " + unitID + ".");
@@ -155,7 +164,7 @@ public class BFStripMaker {
 				makeNewFrame(frame, unitID, atk, "atk");
 				// System.out.println("Making attack GIF for " + unitID +
 				// "...");
-				makeStrip(dirGif, unitID, "atk", atk);
+				makeStrip(dirGif, dir, unitID, "atk", atk);
 			} else {
 				// error[2] = true;
 				System.out.println("No attack CSV file found for " + unitID + ".");
@@ -291,7 +300,7 @@ public class BFStripMaker {
 				b = sourcePix.getBlue();
 				a = sourcePix.getAlpha();
 
-				if((blendMode == 1) && (a != 0) && opacity > 0 && a > 0){
+				if((blendMode == 1) && opacity > 0 && a > 0){
 					//blend code based off of this: http://pastebin.com/vXc0yNRh
 					int pixval = (r + g + b) / 3;
 					r += pixval;
@@ -574,8 +583,8 @@ public class BFStripMaker {
 
 
 	// method to make an animation strip
-	public static void makeStrip(String dirGif, String unitID, String type, int[][] csvFile){
-		String fName = dirGif + "\\unit_" + type + "_" + unitID;
+	public static void makeStrip(String dirGif, String dirStrip, String unitID, String type, int[][] csvFile){
+		String fName = dirStrip + "\\" + unitID + "\\unit_" + type + "_" + unitID;
 		fName = fName + ".png";
 		System.out.println("Save Path:" + fName);
 	
@@ -598,7 +607,6 @@ public class BFStripMaker {
 		}
 		
 		strip.write(fName);
-		BFFrameMaker.printProgress("Creating " + BFStripAnimator.getFilename(fName) + ". Status: ",
-				BFFrameMaker.getPercent(1,1));
+		//BFFrameMaker.printProgress("Creating " + BFStripAnimator.getFilename(fName) + ". Status: ", BFFrameMaker.getPercent(1,1));
 	}// end makeGif method
 }
