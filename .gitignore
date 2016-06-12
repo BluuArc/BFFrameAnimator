@@ -1,3 +1,4 @@
 *.jar
-BFFrameAnimator.jar
 bin/SimplePictureProperties.txt
+.settings/*
+.classpath
