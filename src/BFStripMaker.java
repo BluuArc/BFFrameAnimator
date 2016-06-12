@@ -1,13 +1,7 @@
 import java.awt.Color;
+import java.awt.geom.AffineTransform;
+import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-
-import javax.imageio.ImageIO;
-
 /*
  * Created by: Joshua Castor
  * Started: June 6, 2015
@@ -190,7 +184,7 @@ public class BFStripMaker {
 		//part.setAllPixelsToAColor(new Color(253, 237, 43));
 		part.setAllPixelsToAnAlpha(0);
 
-		BFFrameMaker.printProgress("Copying framees from spritesheet. Status: ", BFFrameMaker.getPercent(counter, csvFile.length));
+		BFFrameMaker.printProgress("Copying frames from spritesheet. Status: ", BFFrameMaker.getPercent(counter, csvFile.length));
 
 		// System.out.println("Dimensions of frame (WxH): " + width + "x" +
 		// height);
@@ -204,12 +198,29 @@ public class BFStripMaker {
 			part = copyPart(sSheet, part, frame, (numParts - 1 - f));
 		}
 
-		BFFrameMaker.printProgress("Copying framees from spritesheet. Status: ", BFFrameMaker.getPercent(counter + 1, csvFile.length));
+		BFFrameMaker.printProgress("Copying frames from spritesheet. Status: ", BFFrameMaker.getPercent(counter + 1, csvFile.length));
 
 		return part;
 	}// end makeFrame method
 	
-	@SuppressWarnings("unused")
+	public static Picture2 rotateImage(int angle, Picture2 input, int centerX, int centerY){
+		//based off of http://stackoverflow.com/questions/8639567/java-rotating-images
+		//temporary copy
+		Picture2 temp = new Picture2(input.getWidth(), input.getHeight());
+		
+		//rotate/transform
+		double rotationRequired = Math.toRadians (angle);
+		double locationX = centerX;//offsetX + (w/2);
+		double locationY = centerY;//offsetY + (h/2);
+		AffineTransform tx = AffineTransform.getRotateInstance(rotationRequired, locationX, locationY);
+		AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_BILINEAR);
+
+		// Drawing the rotated image at the required drawing locations
+		temp.getGraphics().drawImage(op.filter((BufferedImage) input.getImage(), null), 0, 0, null);
+		return temp;
+		
+	}//end rotateImage
+	
 	public static Picture2 copyPart(Picture2 sSheet, Picture2 part, int[] frame, int currentPart) {
 		int frameX = frame[2 + (currentPart * 11)];
 		int frameY = frame[3 + (currentPart * 11)];
@@ -223,36 +234,21 @@ public class BFStripMaker {
 		int h = frame[11 + (currentPart * 11)];
 		
 		double opacity = opac / 100.0;
-		
-		if (rotate < 0)
-			rotate = rotate + 360;
-		double angle = Math.toRadians((double) (rotate));
-		double sin = Math.sin(angle);
-		double cos = Math.cos(angle);
-		double x0 = 0.5 * (w - 1); // point to rotate about
-		double y0 = 0.5 * (h - 1); // center of part
-		int r0, c0;
-	    int r1, c1;
-	    int rows, cols;
-	    rows = w;
-	    cols = h;
-	    
-	    double rads = (rotate * 3.14159265)/180.0; //converts the degree given by user into radians
-	    //find midpoints
-	    r0 = rows / 2;
-	    c0 = cols / 2;
-	    
+
 	    Picture2 tempPart = new Picture2(part.getWidth(),part.getHeight());
 		Pixel sourcePix;
 		Pixel targetPix;
+		
+		//offset pixels are positioned relative to center of frame; these are coords of top left of part
 		int offsetX = (part.getWidth() / 2) + frameX;
 		int offsetY = (part.getHeight() / 2) + frameY;
 
 		// System.out.println("Starting coordinates on frame are (" + offsetX +
 		// "," + offsetY + ")");
 
+		int x = 0;
 		int y = 0;
-		for (int x = 0; x < w; x++) {
+		for (x = 0; x < w; x++) {
 			for (y = 0; y < h; y++) {
 				// get current pixel position
 				int sourceX = spriteX + x;
@@ -266,24 +262,26 @@ public class BFStripMaker {
 				sourcePix = sSheet.getPixel(sourceX, sourceY);
 				
 				//set target pixels
-				int targetX;
-				int targetY;
+				int targetX = offsetX;
+				int targetY = offsetY;
 				
+				targetX += x;
+				targetY += y;
+				
+				/*
 				//set flip
+				//horizontal
 				if (flip == 1 || flip == 3)
-					targetX = offsetX + (w - 1 - x);
+					targetX += (w - 1 - x);
 				else
-					targetX = offsetX + x;
+					targetX += x;
 
+				//vertical
 				if (flip == 2 || flip == 3)
-					targetY = offsetY + (h - 1 - y);
+					targetY += (h - 1 - y);
 				else
-					targetY = offsetY + y;
-				
-				//TODO rotation, opacity
-
-				// System.out.println("Coordinates are (" + offsetX + "," +
-				// offsetY + ")");
+					targetY += y;
+				*/
 
 				targetPix = tempPart.getPixel(targetX, targetY);
 
@@ -317,6 +315,53 @@ public class BFStripMaker {
 				
 			} // end y
 		} // end x
+		
+		//flip image
+		if(flip != 0 || flip != 3){
+			//temporary copy
+			Picture2 temp = new Picture2(tempPart.getWidth(), tempPart.getHeight());
+			
+			for (x = 0; x < w; x++) {
+				for (y = 0; y < h; y++) {
+					int sourceX = offsetX + x;
+					int sourceY = offsetY + y;
+					sourcePix = tempPart.getPixel(sourceX, sourceY);
+					
+					//set target pixels
+					int targetX = offsetX;
+					int targetY = offsetY;
+					
+					//horizontal flip
+					if (flip == 1)
+						targetX += (w - 1 - x);
+					else
+						targetX += x;
+
+					//vertical flip
+					if (flip == 2)
+						targetY += (h - 1 - y);
+					else
+						targetY += y;
+					
+					targetPix = temp.getPixel(targetX, targetY);
+					
+					targetPix.setColor(sourcePix.getColor());
+					targetPix.setAlpha(sourcePix.getAlpha());
+					
+				}//end y
+			}//end x
+
+			tempPart = temp;
+		}//end flip
+		
+		//flip vertical and horizontal
+		if(flip == 3)
+			tempPart = rotateImage(180, tempPart, offsetX + (w/2), offsetY + (h/2));
+
+
+		if(rotate != 0){
+			tempPart = rotateImage(rotate, tempPart, offsetX + (w/2), offsetY + (h/2));
+		}//end rotate
 		
 		//necessary to keep proper alpha values
 		part.getGraphics().drawImage(tempPart.getImage(), 0, 0, null);
