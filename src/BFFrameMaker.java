@@ -22,24 +22,29 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 
 public class BFFrameMaker {
+	public static Color transparentColor = new Color(253, 237, 43);
+	
 	public static void main(String[] args) throws Exception {
 		System.out.println("Begin Program Execution\n");
 
 		// set variables
-		boolean useOpacity = false;
-		boolean useArgs = false;
-		int opacOption;
-		String[] unitIDs = new String[1];
-		String unitID;
-		String dir, dirFrame, dirGif;
-		String listFile = "";
+		boolean useOpacity = false;			//option for opacity
+		boolean useArgs = false;			//option for use of command line arguments
+		int opacOption;						//option for opacity
+		String[] unitIDs = new String[1];	//array of unit IDs
+		String unitID;						//current unit ID
+		String dir, dirFrame, dirGif;		//dir is directory of units sorted by unit ID
+											//dirFrame is directory where frames will be saved
+											//dirGif is directory  where GIFs will be saved
+		String listFile = "";				//filepath of list.txt
 
 		if (args.length != 0)
 			useArgs = true;
 
 		// if no commandline parameters are given
 		if (!useArgs) {
-
+			
+			//set opacity option
 			opacOption = SimpleInput
 					.getIntNumber("Would you like to use opacity? (0 for no, 1 for yes, anything else to exit)");
 			if(opacOption != 0 && opacOption != 1){
@@ -48,12 +53,14 @@ public class BFFrameMaker {
 			}
 			useOpacity = setOpacity(opacOption);
 
+			//output result (mostly for debugging  purposes)
 			if (useOpacity)
 				System.out.println("Opacity option is on.\n");
 			else
 				System.out.println("Opacity option is off.\n");
 
-			unitID = SimpleInput.getString("Enter the unit ID. The opacity option is " + useOpacity);
+			//get unitIDs
+			unitID = SimpleInput.getString("Enter the unit IDs separated by spaces. The opacity option is " + useOpacity);
 			unitIDs = parseString(unitID);
 
 		} else if (args.length == 2) {
@@ -79,6 +86,7 @@ public class BFFrameMaker {
 			 * [list.txt] = file of unit IDs, one ID per line
 			 * [opacity] = option for opacity; 1 for true, 0 for false
 			 */
+			
 			// set parameters
 			unitIDs[0] = args[0];
 			listFile = args[1];
@@ -92,23 +100,17 @@ public class BFFrameMaker {
 			return;
 		}
 
-		// set directory
 		System.out.println("Preparing to make " + unitIDs.length + " set(s) of GIFs...");
 
+		// set directories
 		if (!useArgs) {
+			//manually set directory
 			System.out.println("Choose directory that contains the units sorted by IDs.");
 			dir = FileChooser.pickAFile();
 			dir = getDirectory(dir);
 
-			// set frame directory
-			// System.out.println("Choosing target directory for frames...");
-			// dirFrame = FileChooser.pickAFile();
-			// setDirectory(dirFrame);
-			// dirFrame = getDirectory(dirFrame);
-
 			// set GIF directory
 			System.out.println("Choosing target directory for GIFs...");
-			// System.out.println(" Frames will be in GIFDirectory\frames");
 			dirGif = FileChooser.pickAFile();
 			dirGif = getDirectory(dirGif);
 		} else {
@@ -120,11 +122,11 @@ public class BFFrameMaker {
 		setDirectory(dirFrame + "\\");
 		System.out.println("Frames will be saved to " + dirFrame);
 
-		// for each ID
+		// begin creating sets of animations one by one
 		for (int u = 0; u < unitIDs.length; u++) {
 
+			//set variables
 			unitID = unitIDs[u];
-
 			String[] fNames = setup(dir, unitID);
 			Picture2 sSheet = new Picture2(fNames[4]);
 
@@ -135,15 +137,17 @@ public class BFFrameMaker {
 				numFrames[i] = getNumFrames(fNames[i]);
 
 			System.out.println("\n[Parsing CSV Files for " + unitID + "]");
-			System.out.println("Parsing main CSV File");
+			System.out.println("Parsing CGG File"); 	//CGG file contains position data for all animations 
 			int[][] frames = new int[numFrames[0]][]; // reference: frames[frame number][parameters for frame]
 			parseCSV(fNames[0], frames);
 
-			System.out.println("Parsing idle CSV File");
+			//CGS files contain frame order and delay for animation
+			//TODO: don't hardcode names, but instead look for CGS files and parse them
+			System.out.println("Parsing idle CGS File");
 			int[][] idle = new int[numFrames[1]][];
 			parseCSV(fNames[1], idle);
 
-			System.out.println("Parsing move CSV File");
+			System.out.println("Parsing move CGS File");
 			int[][] move = new int[numFrames[2]][];
 			parseCSV(fNames[2], move);
 
@@ -151,59 +155,64 @@ public class BFFrameMaker {
 			int[][] atk = new int[numFrames[3]][];
 			parseCSV(fNames[3], atk);
 
-			// make frames
-			Picture2[] frame = new Picture2[1];
+			Picture2[] frame = new Picture2[1]; //array for current working set of frames
+												//its length is the number of frames for that animation
 
+			//make animations
 			if (idle.length != 0) {
 				System.out.println("\n[Making idle GIF for " + unitID + "]");
 				frame = new Picture2[idle.length];
-				// System.out.printf("Copying initial frames. Status: ");
-				for (int i = 0; i < idle.length; i++) { // for each line
+				for (int i = 0; i < idle.length; i++) {
+					//make frames from spritesheet
 					frame[i] = makeFrame(unitID, sSheet, frames, idle, i, useOpacity);
 				}
+				//crop and save frames
 				makeNewFrame(frame, unitID, idle, "1idle");
-				// System.out.printf("Making idle GIF for " + unitID + "...");
+				
+				//make GIF from frames
 				makeGif(dirGif, unitID, "1idle", idle, useOpacity);
 			} else {
-				// error[0] = true;
 				System.out.println("No idle CSV file found for " + unitID + ".");
 			}
 			System.out.println("\n");
 			if (move.length != 0) {
 				System.out.println("[Making movement GIF for " + unitID + "]");
 				frame = new Picture2[move.length];
-				for (int i = 0; i < move.length; i++) { // for each line
+				for (int i = 0; i < move.length; i++) {
+					//make frames from spritesheet
 					frame[i] = makeFrame(unitID, sSheet, frames, move, i, useOpacity);
 				}
+				//crop and save frames
 				makeNewFrame(frame, unitID, move, "2move");
-				// System.out.println("Making movement GIF for " + unitID +
-				// "...");
+				
+				//make GIF from frames
 				makeGif(dirGif, unitID, "2move", move, useOpacity);
 			} else {
-				// error[1] = true;
 				System.out.println("No movement CSV file found for " + unitID + ".");
 			}
 			System.out.println("\n");
 			if (atk.length != 0) {
 				System.out.println("[Making attack GIF for " + unitID + "]");
 				frame = new Picture2[atk.length];
-				for (int i = 0; i < atk.length; i++) { // for each line
+				for (int i = 0; i < atk.length; i++) {
+					//make frames from spritesheet
 					frame[i] = makeFrame(unitID, sSheet, frames, atk, i, useOpacity);
 				}
+				//crop and save frames
 				makeNewFrame(frame, unitID, atk, "3atk");
-				// System.out.println("Making attack GIF for " + unitID +
-				// "...");
+				
+				//make GIF from frames
 				makeGif(dirGif, unitID, "3atk", atk, useOpacity);
 			} else {
-				// error[2] = true;
 				System.out.println("No attack CSV file found for " + unitID + ".");
 			}
 			System.out.println("\n");
-		} // end for
+		} // end for each unit ID
 
 		// reset directory
 		setDirectory(dir);
 
+		//TODO: automatically delete frames
 		System.out.println("Don't forget to clear out the frames folder in " + dirFrame);
 
 		System.out.println("\nEnd Program Execution");
@@ -230,27 +239,8 @@ public class BFFrameMaker {
 	public static String[] setup(String dir, String unitID) {
 		String[] fNames = new String[5];
 
-		/*
-		 * //determine element for directory int e; int eExclusive =
-		 * Character.getNumericValue(unitID.charAt(0)); String[] element = {"",
-		 * "\\1Fire\\", "\\2Water\\", "\\3Earth\\", "\\4Thunder\\", "\\5Light\\
-		 * ", "\\6Dark\\"}; if(eExclusive > 6) e =
-		 * Character.getNumericValue(unitID.charAt(1)); else e =
-		 * Character.getNumericValue(unitID.charAt(0));
-		 * 
-		 * dir = dir + element[e];
-		 * 
-		 * System.out.println("Directory is " + dir);
-		 * 
-		 * //declare files and pictures fNames[0] = dir +
-		 * "Animation\\cgg\\unit_cgg_" + unitID + ".csv"; fNames[1] = dir +
-		 * "Animation\\cgs\\unit_idle_cgs_" + unitID + ".csv"; fNames[2] = dir +
-		 * "Animation\\cgs\\unit_move_cgs_" + unitID + ".csv"; fNames[3] = dir +
-		 * "Animation\\cgs\\unit_atk_cgs_" + unitID + ".csv"; fNames[4] = dir +
-		 * "Spritesheets\\unit_anime_" + unitID + ".png";
-		 */
-
 		// declare files and pictures
+		// TODO: change so that names aren't hardcoded
 		fNames[0] = dir + "\\" + unitID + "\\unit_cgg_" + unitID + ".csv";
 		fNames[1] = dir + "\\" + unitID + "\\unit_idle_cgs_" + unitID + ".csv";
 		fNames[2] = dir + "\\" + unitID + "\\unit_move_cgs_" + unitID + ".csv";
@@ -278,6 +268,7 @@ public class BFFrameMaker {
 			System.out.printf(" - Done\n");
 	}// end printProgress
 
+	//method to get percentage 
 	public static int getPercent(int curr, int total) {
 		return (int) (((double) (curr) / (double) total) * 100);
 	}
@@ -285,15 +276,19 @@ public class BFFrameMaker {
 	// method to get unit ID to call other files
 	public static String getUnitID(String fName) { // ex input is
 													// /some/dir/unit_cgg_10011.csv
+		
+		/*
 		int pos = fName.lastIndexOf(File.separatorChar);
 		fName = fName.substring(pos + 1, fName.length());// becomes
 															// unit_cgg_10011.csv
+		*/
+		fName = BFStripAnimator.getFilename(fName);
 		String unitID = fName.substring(fName.lastIndexOf("_") + 1, fName.lastIndexOf(".")); // becomes
 																								// 10011
 		return unitID;
 	}// end getUnitID method
 
-	// method to get number of frames
+	// method to get number of frames (number of lines in CSV file)
 	public static int getNumFrames(String csvFile) {
 		BufferedReader br = null;
 		@SuppressWarnings("unused")
@@ -301,23 +296,24 @@ public class BFFrameMaker {
 		int numFrames = 0;
 
 		try {
+			//open file
 			br = new BufferedReader(new FileReader(csvFile));
-			// System.out.println("Begin reading lines...");
-			while ((line = br.readLine()) != null) {// for each line that's not
-													// blank
+			
+			//while not at EOF, increment line counter
+			while ((line = br.readLine()) != null) {
 				numFrames++;
 			} // end while
 		} catch (FileNotFoundException e) {
-			System.out.println("ERROR: File not found");
+			System.out.println("ERROR: File [" + csvFile + "] not found");
 		} catch (IOException e) {
-			System.out.println("ERROR: IO Exception when opening/reading file");
+			System.out.println("ERROR: IO Exception when opening/reading file [" + csvFile + "]");
 		} finally {
+			//close file
 			if (br != null) {
 				try {
 					br.close();
 				} catch (IOException e) {
-					// e.printStackTrace();
-					System.out.println("ERROR: IO Exception when closing file");
+					System.out.println("ERROR: IO Exception when closing file [" + csvFile + "]");
 				} // end catch
 			} // end try
 		} // end finally
@@ -325,10 +321,10 @@ public class BFFrameMaker {
 		return numFrames;
 	}// end getNumFrames method
 
-	// method to parse a String input
+	// method to parse a String input separated by spaces into a String array
 	public static String[] parseString(String input) {
 		String[] output = new String[1];
-		if (input.length() > 7)
+		if (input.length() > 7) //a regular unit ID is 5-6 characters long and a space is 1 character
 			output = input.split(" ");
 		else
 			output[0] = input;
@@ -336,34 +332,34 @@ public class BFFrameMaker {
 		return output;
 	}// end parseString method
 
-	// method to parse a file into a string array
+	// method to parse a file with a list of unit IDs into a string array
 	public static String[] parseList(String fName) {
+		//each index represents the line number in the file minus one
+		//e.g. line 1 has index 0, line 2 has index 1, etc.
 		String[] output = new String[getNumFrames(fName)];
 		BufferedReader br = null;
 		String line = " ";
 		int i = 0;
 
 		try {
+			//open file
 			br = new BufferedReader(new FileReader(fName));
-			while ((line = br.readLine()) != null) {// for each line that's not
-													// blank
-				// put each line into main array
+			//while not at EOF
+			while ((line = br.readLine()) != null) {
+				// put each line into output array
 				output[i] = line;
 				i++;
 			} // end while
 		} catch (FileNotFoundException e) {
-			// e.printStackTrace();
-			System.out.println("ERROR: File not found");
+			System.out.println("ERROR: File [" + fName + "] not found");
 		} catch (IOException e) {
-			// e.printStackTrace();
-			System.out.println("ERROR: IO Exception when opening/reading file");
+			System.out.println("ERROR: IO Exception when opening/reading file [" + fName + "]");
 		} finally {
 			if (br != null) {
 				try {
 					br.close();
 				} catch (IOException e) {
-					// e.printStackTrace();
-					System.out.println("ERROR: IO Exception when closing file");
+					System.out.println("ERROR: IO Exception when closing file [" + fName + "]");
 				} // end catch
 			} // end try
 		} // end finally
@@ -371,17 +367,18 @@ public class BFFrameMaker {
 		return output;
 	}// end parseString method
 
-	// method to parse CSV into a String array where each position is a String
-	// array
+	// method to parse CSV into a String array where each line
 	public static void parseCSV(String csvFile, int[][] frames) {
+		//output to frames 2D array
 		BufferedReader br = null;
 		String line = " ";
 		String separator = ",";
 		int i = 0;
 
 		try {
+			//open file
 			br = new BufferedReader(new FileReader(csvFile));
-			// System.out.println("Begin reading lines...");
+			//while not at EOF
 			while ((line = br.readLine()) != null) {// for each line that's not
 													// blank
 				// convert line from string array to int array
@@ -395,24 +392,23 @@ public class BFFrameMaker {
 				i++;
 			} // end while
 		} catch (FileNotFoundException e) {
-			// e.printStackTrace();
-			System.out.println("ERROR: File not found");
+			System.out.println("ERROR: File [" + csvFile + "] not found");
 		} catch (IOException e) {
-			// e.printStackTrace();
-			System.out.println("ERROR: IO Exception when opening/reading file");
+			System.out.println("ERROR: IO Exception when opening/reading file [" + csvFile + "]");
 		} finally {
+			//close file
 			if (br != null) {
 				try {
 					br.close();
 				} catch (IOException e) {
 					// e.printStackTrace();
-					System.out.println("ERROR: IO Exception when closing file");
+					System.out.println("ERROR: IO Exception when closing file [" + csvFile + "]");
 				} // end catch
 			} // end try
 		} // end finally
 	}// end parseCSV method
 
-	// method to convert string array to integer
+	// method to convert string array to integer array
 	public static int[] convertToInt(String[] input) {
 		int[] frame = new int[input.length];
 		for (int i = 0; i < input.length; i++)
@@ -420,8 +416,9 @@ public class BFFrameMaker {
 		return frame;
 	}// end convertToInt method
 
-	// method to save copy a current part from a spritesheet to a picture
+	// method to save copy a current part from a spritesheet to a picture2 object
 	public static Picture2 copyPart(Picture2 sSheet, Picture2 part, int[] frame, int currentPart, boolean useOpacity) {
+		//get data for current frame
 		int frameX = frame[2 + (currentPart * 11)];
 		int frameY = frame[3 + (currentPart * 11)];
 		int flip = frame[4 + (currentPart * 11)];
@@ -433,17 +430,16 @@ public class BFFrameMaker {
 		int w = frame[10 + (currentPart * 11)];
 		int h = frame[11 + (currentPart * 11)];
 		
+		//opacity ranges from 0.0 to 1.0 since it's a multiplier
 		double opacity = opac / 100.0;
 
+		//tempPart is necessary to keep proper transparency values
 		Picture2 tempPart = new Picture2(part.getWidth(),part.getHeight());
 		Pixel sourcePix;
 		Pixel targetPix;
 
 		int offsetX = (part.getWidth() / 2) + frameX;
 		int offsetY = (part.getHeight() / 2) + frameY;
-
-		// System.out.println("Starting coordinates on frame are (" + offsetX +
-		// "," + offsetY + ")");
 
 		int x = 0;
 		int y = 0;
@@ -458,59 +454,28 @@ public class BFFrameMaker {
 					sourceY = sSheet.getHeight() - 1;
 				sourcePix = sSheet.getPixel(sourceX, sourceY);
 
-				//set target pixels
+				//get target pixels
 				int targetX = offsetX;
 				int targetY = offsetY;
-
 				targetX += x;
 				targetY += y;
-				
-				/*
-				//set flip
-				//horizontal
-				if (flip == 1 || flip == 3)
-					targetX += (w - 1 - x);
-				else
-					targetX += x;
-
-				//vertical
-				if (flip == 2 || flip == 3)
-					targetY += (h - 1 - y);
-				else
-					targetY += y;
-				*/
-
-				// System.out.println("Coordinates are (" + offsetX + "," +
-				// offsetY + ")");
-
 				targetPix = tempPart.getPixel(targetX, targetY);
-
-				/*
-				int r, g, b;
-				if (useOpacity) {
-					r = (int) (sourcePix.getRed() * opacity);
-					g = (int) (sourcePix.getGreen() * opacity);
-					b = (int) (sourcePix.getBlue() * opacity);
-				} else {
-					r = sourcePix.getRed();
-					g = sourcePix.getGreen();
-					b = sourcePix.getBlue();
-				}
-				 */
 				
+				//get source color values
 				int r, g, b, a;
 				r = sourcePix.getRed();
 				g = sourcePix.getGreen();
 				b = sourcePix.getBlue();
 				a = sourcePix.getAlpha();
 				
+				//set alpha/opacity
 				int targetAlpha;
 				if(useOpacity)
 					targetAlpha = (int)(a * opacity);
 				else
 					targetAlpha = a;
 				
-				//TODO: implement useOpacity option again
+				//set colors and opacity according to blend mode
 				if((blendMode == 1) && opacity > 0 && a > 0){
 					//blend code based off of this: http://pastebin.com/vXc0yNRh
 					int pixval = (r + g + b) / 3;
@@ -527,39 +492,27 @@ public class BFFrameMaker {
 					
 					if(useOpacity)
 						targetAlpha = (int)(pixval * opacity);
-					//else
-					//	targetAlpha = pixval;
 				}
-				if (targetAlpha > 150 && opacity > 0) { // copy pixel
-																	// if
-																	// there's
-																	// something
-																	// in the
-																	// source
-																	// pixel
+				if (targetAlpha > 150 && opacity > 0) { 
+					// copy pixel to target if there's something in the source pixel
 					targetPix.setColor(new Color(r, g, b));
-					if (a > targetPix.getAlpha())//targetPix.getAlpha() == 90) // copy transparency if there
-													// is nothing in that pixel
-													// in the target image
+					if (a > targetPix.getAlpha())
+						//condition to keep proper transparency values
 						targetPix.setAlpha(targetAlpha);
-					/*
-					 * }else if (targetPix.getAlpha() < 90){// if there is
-					 * nothing in both the source and target pixel, set it this
-					 * color targetPix.setColor(new Color(253,237,43));
-					 * targetPix.setAlpha(255);
-					 */
 				} // end if
 			} // end y
 		} // end x
 		
 
 		//flip image
+		//0 is no flip, 3 is flip horizontally and vertically (taken care of after this block)
 		if(flip != 0 || flip != 3){
 			//temporary copy
 			Picture2 temp = new Picture2(tempPart.getWidth(), tempPart.getHeight());
 			
 			for (x = 0; x < w; x++) {
 				for (y = 0; y < h; y++) {
+					//get source pixels
 					int sourceX = offsetX + x;
 					int sourceY = offsetY + y;
 					sourcePix = tempPart.getPixel(sourceX, sourceY);
@@ -580,30 +533,29 @@ public class BFFrameMaker {
 					else
 						targetY += y;
 					
+					//copy pixels at flipped coordinates
 					targetPix = temp.getPixel(targetX, targetY);
-					
 					targetPix.setColor(sourcePix.getColor());
 					targetPix.setAlpha(sourcePix.getAlpha());
-					
 				}//end y
 			}//end x
 
+			//set tempPart as new copy
 			tempPart = temp;
 		}//end flip
 		
 		
-		//flip vertical and horizontal
+		//flip vertically and horizontally
 		if(flip == 3)
 			tempPart = BFStripMaker.rotateImage(180, tempPart, offsetX + (w/2), offsetY + (h/2));
 
-
+		//rotate image
 		if(rotate != 0){
 			tempPart = BFStripMaker.rotateImage(rotate, tempPart, offsetX + (w/2), offsetY + (h/2));
 		}//end rotate
 		
-		//necessary to keep proper alpha values
+		//necessary command to keep proper alpha values
 		part.getGraphics().drawImage(tempPart.getImage(), 0, 0, null);
-
 
 		return part;
 	}// end copyPart method
@@ -690,21 +642,14 @@ public class BFFrameMaker {
 		// create general template for all frames
 		int width = getLargestWidth(frames, csvFile);
 		int height = getLargestHeight(frames, csvFile);
-		Picture2 part = new Picture2(width, height);
-		part.setAllPixelsToAColor(new Color(253, 237, 43));
+		Picture2 part = new Picture2(width, height);	//resulting frame
+		part.setAllPixelsToAColor(transparentColor);
 		part.setAllPixelsToAnAlpha(255);
 
 		printProgress("Copying frames from spritesheet. Status: ", getPercent(counter, csvFile.length));
 
-		// System.out.println("Dimensions of frame (WxH): " + width + "x" +
-		// height);
-
-		// System.out.println("Copying " + numParts + " parts onto frame number
-		// " + currentFrame);
-
+		//make frame part by part
 		for (int f = 0; f < numParts; f++) {
-			// System.out.println("Copying part number " + (numParts - 1 - f) +
-			// " onto frame number " + currentFrame);
 			part = copyPart(sSheet, part, frame, (numParts - 1 - f), useOpacity);
 		}
 
@@ -713,7 +658,7 @@ public class BFFrameMaker {
 		return part;
 	}// end makeFrame method
 
-	// method to ocnvert frames to milliseconds
+	// method to convert frames to milliseconds
 	public static int FramesToMilliseconds(int frames) {
 		double fps = 60.0;
 		int mSec = (int) ((frames / fps) * 1000);
@@ -735,14 +680,10 @@ public class BFFrameMaker {
 				for (y = 0; y < h; y++) {
 					// get current pixels
 					p = part[i].getPixel(x, y);
-					// int a = p.getAlpha();
 					Color c = p.getColor();
-					// save y coordinate if it's lower than the previously saved
-					// coord
-					// and if there's something there (alpha !- 0)
-					if ((y < upperCoord) && (Pixel.colorDistance(c, new Color(253, 237, 43)) != 0))// (a
-																									// !=
-																									// 0))
+					// save y coord if it's lower than the previously saved coord
+					// and if it's not the transparent color
+					if ((y < upperCoord) && (Pixel.colorDistance(c, transparentColor) != 0))
 						upperCoord = y;
 				} // end y
 			} // end x
@@ -777,14 +718,10 @@ public class BFFrameMaker {
 				for (y = 0; y < h; y++) {
 					// get current pixels
 					p = part[i].getPixel(x, y);
-					// int a = p.getAlpha();
 					Color c = p.getColor();
-					// save y coordinate if it's lower than the previously saved
-					// coord
-					// and if there's something there (alpha !- 0)
-					if ((y > lowerCoord) && (Pixel.colorDistance(c, new Color(253, 237, 43)) != 0))// (a
-																									// !=
-																									// 0))
+					// save y coord if it's lower than the previously saved coord
+					// and if it's not the transparent color
+					if ((y > lowerCoord) && (Pixel.colorDistance(c, transparentColor) != 0))
 						lowerCoord = y;
 				} // end y
 			} // end x
@@ -816,14 +753,10 @@ public class BFFrameMaker {
 				for (x = 0; x < w; x++) {
 					// get current pixels
 					p = part[i].getPixel(x, y);
-					// int a = p.getAlpha();
 					Color c = p.getColor();
-					// save y coordinate if it's lower than the previously saved
-					// coord
-					// and if there's something there (alpha !- 0)
-					if ((x < upperCoord) && (Pixel.colorDistance(c, new Color(253, 237, 43)) != 0))// (a
-																									// !=
-																									// 0))
+					// save y coord if it's lower than the previously saved coord
+					// and if it's not the transparent color
+					if ((x < upperCoord) && (Pixel.colorDistance(c, transparentColor) != 0))
 						upperCoord = x;
 				} // end y
 			} // end x
@@ -858,14 +791,10 @@ public class BFFrameMaker {
 				for (x = 0; x < w; x++) {
 					// get current pixels
 					p = part[i].getPixel(x, y);
-					// int a = p.getAlpha();
 					Color c = p.getColor();
-					// save y coordinate if it's lower than the previously saved
-					// coord
-					// and if there's something there (alpha !- 0)
-					if ((x > lowerCoord) && (Pixel.colorDistance(c, new Color(253, 237, 43)) != 0))// (a
-																									// !=
-																									// 0))
+					// save y coord if it's lower than the previously saved coord
+					// and if it's not the transparent color
+					if ((x > lowerCoord) && (Pixel.colorDistance(c, transparentColor) != 0))
 						lowerCoord = x;
 				} // end y
 			} // end x
@@ -882,9 +811,8 @@ public class BFFrameMaker {
 		return lowerCoord;
 	}// end getLowerBound method
 
-	// method to get all bounds
+	// method to get all boundaries
 	public static int[] getBounds(Picture2[] part) {
-		// System.out.printf("Getting bounds. Status: ");
 		int[] bounds = new int[4];
 
 		printProgress("Getting bounds. Status: ", 0);
@@ -904,30 +832,26 @@ public class BFFrameMaker {
 		return bounds;
 	}// end getBounds method
 
-	// method to resize frames in array from given bounds
+	// method to resize frames in array to new dimensions
 	public static void makeNewFrame(Picture2[] frame, String unitID, int[][] csvFile, String type) {
 		int[] bounds = getBounds(frame);
 		int w = bounds[3] - bounds[2];
 		int h = bounds[1] - bounds[0];
 
 		for (int i = 0; i < frame.length; i++) {
-			// int currentFrame = csvFile[i][0];
-			int delay = FramesToMilliseconds(csvFile[i][3]);
-
 			printProgress("Cropping and saving frames. Status: ", getPercent(i, frame.length));
-			// System.out.println("Cropping and saving frame number " +
-			// currentFrame + "...");
+			int delay = FramesToMilliseconds(csvFile[i][3]);
+			
+			//copy old part to new resized part
 			Picture2 part = new Picture2(w, h);
 			copyPicture(frame[i], bounds[2], bounds[0], part, 0, 0, w, h);
-			// save frane as ./frame_<currentFrame>/part_<currentPart>.jpg
-			// System.out.println("Saving frame number " + currentFrame +
-			// "...");
+			
+			// save frame as ./unit_<unitID>_<type>-F<frameNumber>_<delay>.png
 			String fName = FileChooser.getMediaDirectory() + "\\unit_" + unitID + "_" + type + "-F" + i + "_" + delay
 					+ ".png";
 			part.write(fName);
 			printProgress("Cropping and saving frames. Status: ", getPercent(i + 1, frame.length));
-		}
-
+		}//end for each frame
 	}// end makeNewFrame method
 
 	// method to make an exact copy of an image onto another image using
@@ -937,12 +861,6 @@ public class BFFrameMaker {
 		Pixel pix;
 		int x;
 		int y;
-
-		// declare dimensional variables
-		/*
-		 * int width = p.getWidth(); int height = p.getHeight(); int w2 =
-		 * p2.getWidth(); int h2 = p2.getHeight();
-		 */
 
 		// for each row
 		for (x = sX2; x < eX2; x++) {
@@ -976,16 +894,17 @@ public class BFFrameMaker {
 		else
 			fName = fName + "_opac";
 		fName = fName + ".gif";
+		
+		//save gif as  unit_<unitID>_<type>_<n/opac>.gif
+		//TODO: delete frames as they are used
 
 		AnimatedGifEncoder g = new AnimatedGifEncoder();
 		g.setQuality(1);
 		g.setDispose(2);
-		g.setTransparent(new Color(253, 237, 43));
+		g.setTransparent(transparentColor);
 		g.setRepeat(0);
 		g.start(fName);
-		for (int i = 0; i < csvFile.length; i++) { // for each line
-			// System.out.println("Adding frame " + (i + 1) + " of " +
-			// csvFile.length + " to GIF of " + unitID);
+		for (int i = 0; i < csvFile.length; i++) {
 			printProgress("Creating " + BFStripAnimator.getFilename(fName) + ". Status: ",
 					getPercent(i, csvFile.length));
 			int delay = FramesToMilliseconds(csvFile[i][3]);
