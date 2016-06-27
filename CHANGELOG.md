@@ -1,5 +1,8 @@
 # Working Changelog (To be put into release notes when ready)
 
+## June 26, 2016
+* created method to find CGS files in a folder.
+
 ## June 22, 2016 
 * added version number to opening sequence of menu class
 * added some comments and cleaned up some code of the menu class to make things more legible
