@@ -234,6 +234,64 @@ public class BFFrameMaker {
 		String dir = fName.substring(0, pos);
 		return dir;
 	}// end setDirectory method
+	
+	//method to get list of filenames in a path
+	public static String[] getFilesInPath(String dir){
+		String[] listString = new String[1];	//StringArray to output
+
+		//adapted from http://stackoverflow.com/questions/1844688/read-all-files-in-a-folder
+		
+		//get filenames
+		File folder = new File(dir);
+		File[] listFiles = folder.listFiles();
+		
+		if(listFiles.length == 0){
+			System.out.println("ERROR: Directory [" + dir + "] is empty or not found.");
+			return null;
+		}
+		
+		//put filenames into string array
+		listString = new String[listFiles.length];
+		for(int i = 0; i < listFiles.length; ++i){
+			listString[i] = listFiles[i].getName();
+		}
+		
+		return listString;
+	}
+	
+	//method to get the unit_cgg_<unitID>.csv file
+	public static String[] getCGSFiles(String dir){
+		String[] output = new String[1];
+		
+		
+		String[] list = getFilesInPath(dir);
+		String[] temp = new String[list.length];
+		int count = 0;
+		
+		//get cgs file names from directory
+		for(int i = 0; i < list.length; ++i){
+			temp[i] = null;
+			if(list[i].contains("cgs")){
+				temp[count] = list[i];
+				count++;
+			}
+		}
+		
+		output = new String[count];
+		
+		for(int i = 0; i < count; ++i){
+			output[i] = temp[i];
+		}
+
+		
+		//check if file was found
+		if(!((output[0].contains("cgs")) || (output[0].contains("csv")))){
+			System.out.println("ERROR: CGS files not found in [" + dir + "]");
+			return null;
+		}
+		
+		return output;
+	}
 
 	// method to initialize required pictures and files
 	public static String[] setup(String dir, String unitID) {
