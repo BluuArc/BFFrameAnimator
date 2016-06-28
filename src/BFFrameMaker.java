@@ -23,6 +23,7 @@ import javax.imageio.ImageIO;
 
 public class BFFrameMaker {
 	public static Color transparentColor = new Color(253, 237, 43);
+	public static boolean debugOutput = true;
 	
 	public static void main(String[] args) throws Exception {
 		System.out.println("Begin Program Execution\n");
@@ -124,96 +125,83 @@ public class BFFrameMaker {
 
 		// begin creating sets of animations one by one
 		for (int u = 0; u < unitIDs.length; u++) {
-
+			
 			//set variables
 			unitID = unitIDs[u];
-			String[] fNames = setup(dir, unitID);
-			Picture2 sSheet = new Picture2(fNames[4]);
-
-			// create arrays
-			int[] numFrames = new int[4]; // integer array to get number of
-											// frames/lines of each CSV file
-			for (int i = 0; i < numFrames.length; i++)
-				numFrames[i] = getNumFrames(fNames[i]);
-
-			System.out.println("\n[Parsing CSV Files for " + unitID + "]");
-			System.out.println("Parsing CGG File"); 	//CGG file contains position data for all animations 
-			int[][] frames = new int[numFrames[0]][]; // reference: frames[frame number][parameters for frame]
-			parseCSV(fNames[0], frames);
-
-			//CGS files contain frame order and delay for animation
-			//TODO: don't hardcode names, but instead look for CGS files and parse them
-			System.out.println("Parsing idle CGS File");
-			int[][] idle = new int[numFrames[1]][];
-			parseCSV(fNames[1], idle);
-
-			System.out.println("Parsing move CGS File");
-			int[][] move = new int[numFrames[2]][];
-			parseCSV(fNames[2], move);
-
-			System.out.println("Parsing attack CSV File");
-			int[][] atk = new int[numFrames[3]][];
-			parseCSV(fNames[3], atk);
-
-			Picture2[] frame = new Picture2[1]; //array for current working set of frames
-												//its length is the number of frames for that animation
-
-			//make animations
-			if (idle.length != 0) {
-				System.out.println("\n[Making idle GIF for " + unitID + "]");
-				frame = new Picture2[idle.length];
-				for (int i = 0; i < idle.length; i++) {
-					//make frames from spritesheet
-					frame[i] = makeFrame(unitID, sSheet, frames, idle, i, useOpacity);
-				}
-				//crop and save frames
-				makeNewFrame(frame, unitID, idle, "1idle");
+			String workingDir = dir + "\\" + unitID;
+			String workingFile = "";
+			
+			//debug("workingDir is [" + workingDir + "]");
+			
+			System.out.println("\n[Preparing to make GIFs for " + unitID + "]");
+			
+			//get files
+			System.out.println("Getting CSV files and sprite sheet");
+			String[] cgsNames = getFiles(workingDir, "cgs", ".csv");					
+			Picture2 sSheet = new Picture2(getFile(workingDir, "anime", ".png"));		//sprite sheet contains image data
+			workingFile = getFile(workingDir, "cgg", ".csv");
+			
+			//check if getting files succeeded
+			//using getFile multiple times results in multiple error messages if file doesn't exist, but it's fine
+			if(cgsNames == null || workingFile == null || getFile(workingDir, "anime", ".png") == null){
+				String message = "ERROR: ";
 				
-				//make GIF from frames
-				makeGif(dirGif, unitID, "1idle", idle, useOpacity);
-			} else {
-				System.out.println("No idle CSV file found for " + unitID + ".");
-			}
-			System.out.println("\n");
-			if (move.length != 0) {
-				System.out.println("[Making movement GIF for " + unitID + "]");
-				frame = new Picture2[move.length];
-				for (int i = 0; i < move.length; i++) {
-					//make frames from spritesheet
-					frame[i] = makeFrame(unitID, sSheet, frames, move, i, useOpacity);
-				}
-				//crop and save frames
-				makeNewFrame(frame, unitID, move, "2move");
+				if(cgsNames == null)
+					message += "CGS file(s) and ";
+				if(workingFile == null)
+					message += "CGG file and ";
+				if(getFile(workingDir, "anime", ".png") == null)
+					message += "sprite sheet ";
 				
-				//make GIF from frames
-				makeGif(dirGif, unitID, "2move", move, useOpacity);
-			} else {
-				System.out.println("No movement CSV file found for " + unitID + ".");
-			}
-			System.out.println("\n");
-			if (atk.length != 0) {
-				System.out.println("[Making attack GIF for " + unitID + "]");
-				frame = new Picture2[atk.length];
-				for (int i = 0; i < atk.length; i++) {
-					//make frames from spritesheet
-					frame[i] = makeFrame(unitID, sSheet, frames, atk, i, useOpacity);
-				}
-				//crop and save frames
-				makeNewFrame(frame, unitID, atk, "3atk");
+				message += "is/are missing in [" + workingDir +"]";
+				System.out.println(message);
+				return;
+			}//end check
+			
+			//parse CGG file
+			System.out.println("Parsing CGG File"); 					//CGG file contains position data for all animations 
+			int[][] CGGFrames = new int[getNumFrames(workingFile)][];	//reference: frames[frame number][parameters for frame]
+			parseCSV(workingFile, CGGFrames);
+
+
+			//for each CGS file, create animation
+			for(int c = 0; c < cgsNames.length; ++c){
 				
-				//make GIF from frames
-				makeGif(dirGif, unitID, "3atk", atk, useOpacity);
-			} else {
-				System.out.println("No attack CSV file found for " + unitID + ".");
-			}
-			System.out.println("\n");
+				System.out.println("Parsing CGS File");
+				workingFile = cgsNames[c];
+				int [][] CGSFrames = new int[getNumFrames(workingFile)][]; //CGS files contain frame order and delay for animation
+				parseCSV(workingFile, CGSFrames);
+				
+				Picture2[] GifFrames = new Picture2[1]; 	//array for current working set of frames
+															//its length is the number of frames for that animation
+				
+				String type = BFStripAnimator.getType(workingFile);	//can be 1idle, 2move, 3atk, or original type like limit
+				
+				//make animation
+				if(CGSFrames.length != 0){
+					System.out.println("\n[Making [" + type + "] GIF for " + unitID + "]");
+					GifFrames = new Picture2[CGSFrames.length];	//resize array to correct length of animation
+					
+					//make frames from sprite sheet
+					for(int i = 0; i < CGSFrames.length; ++i){
+						GifFrames[i] = makeFrame(unitID, sSheet, CGGFrames, CGSFrames, i, useOpacity);
+					}
+					
+					//crop and save frames 
+					makeNewFrame(GifFrames, unitID, CGSFrames, type);
+					
+					//make GIF from frames
+					makeGif(dirGif, unitID, type, CGSFrames, useOpacity);
+				}else{
+					System.out.println("ERROR: File error with [" + workingFile + "]");
+				}
+				System.out.println("\n");
+			}//end for each CGS file
+			System.out.println("[Finished making GIFs for " + unitID + "]");
 		} // end for each unit ID
 
 		// reset directory
 		setDirectory(dir);
-
-		//TODO: automatically delete frames
-		System.out.println("Don't forget to clear out the frames folder in " + dirFrame);
 
 		System.out.println("\nEnd Program Execution");
 	} // end main method
@@ -235,6 +223,12 @@ public class BFFrameMaker {
 		return dir;
 	}// end setDirectory method
 	
+	public static void debug(String message){
+		if(debugOutput)
+			System.out.println("DEBUG: " + message);
+	}
+	
+	//method to count files in a file array
 	public static int countFiles(File[] listFiles){
 		int count = 0;
 		for(int i = 0; i < listFiles.length; ++i)
@@ -242,7 +236,7 @@ public class BFFrameMaker {
 				count++;
 		
 		return count;
-	}
+	}//end countFiles
 	
 	//method to get list of filenames in a path
 	public static String[] getFilesInPath(String dir){
@@ -254,7 +248,7 @@ public class BFFrameMaker {
 		File folder = new File(dir);
 		File[] listFiles = folder.listFiles();
 		
-		if(listFiles.length == 0){
+		if(listFiles == null || listFiles.length == 0){
 			System.out.println("ERROR: Directory [" + dir + "] is empty or not found.");
 			return null;
 		}
@@ -299,8 +293,10 @@ public class BFFrameMaker {
 			}
 		}
 		
+		output = dir + "\\" + output;
+		
 		//check if file was found
-		if(!(output.contains(name) || output.contains(extension))){
+		if(!(BFStripAnimator.getFilename(output).contains(name) || BFStripAnimator.getFilename(output).contains(extension))){
 			System.out.println("ERROR: File with name [" + name + "] and extension [" + extension +  "] not found in [" + dir + "]");
 			return null;
 		}
@@ -343,12 +339,12 @@ public class BFFrameMaker {
 		output = new String[count];
 		
 		for(int i = 0; i < count; ++i){
-			output[i] = temp[i];
+			output[i] = dir + "\\" + temp[i];
 		}
 
 		
 		//check if file was found
-		if(output.length == 0 || !(output[0].contains(name) || output[0].contains(extension))){
+		if(output.length == 0 || !(BFStripAnimator.getFilename(output[0]).contains(name) || BFStripAnimator.getFilename(output[0]).contains(extension))){
 			System.out.println("ERROR: Files with name [" + name + "] and extension [" + extension +  "] not found in [" + dir + "]");
 			return null;
 		}
@@ -357,11 +353,12 @@ public class BFFrameMaker {
 	}//end getFiles
 
 	// method to initialize required pictures and files
+	@Deprecated
+	//deprecated because of creation of getFile and getFiles methods
 	public static String[] setup(String dir, String unitID) {
 		String[] fNames = new String[5];
 
 		// declare files and pictures
-		// TODO: change so that names aren't hardcoded
 		fNames[0] = dir + "\\" + unitID + "\\unit_cgg_" + unitID + ".csv";
 		fNames[1] = dir + "\\" + unitID + "\\unit_idle_cgs_" + unitID + ".csv";
 		fNames[2] = dir + "\\" + unitID + "\\unit_move_cgs_" + unitID + ".csv";
@@ -1017,7 +1014,6 @@ public class BFFrameMaker {
 		fName = fName + ".gif";
 		
 		//save gif as  unit_<unitID>_<type>_<n/opac>.gif
-		//TODO: delete frames as they are used
 
 		AnimatedGifEncoder g = new AnimatedGifEncoder();
 		g.setQuality(1);
@@ -1037,6 +1033,18 @@ public class BFFrameMaker {
 					getPercent(i + 1, csvFile.length));
 		}
 		g.finish();
+		
+		//delete used frames
+		for(int i = 0; i < csvFile.length; ++i){
+			printProgress("Deleting old frames. Status: ", getPercent(i, csvFile.length));
+			int delay = FramesToMilliseconds(csvFile[i][3]);
+			File currFrame = new File(FileChooser.getMediaDirectory() + "\\unit_" + unitID	+ "_" + type + "-F" + i + "_" + delay + ".png");
+			if(!currFrame.delete()){
+				System.out.println("ERROR: Failed to delete [" + currFrame.toString() + "]");
+			}
+			printProgress("Deleting old frames. Status: ", getPercent(i, csvFile.length));
+		}
+		
 	}// end makeGif method
 
 } // end of class

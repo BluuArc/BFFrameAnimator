@@ -5,6 +5,8 @@ public class Debug {
 		String dir = FileChooser.pickAFile();
 		dir = BFFrameMaker.getDirectory(dir);
 		
+		dir = dir + "\\Units" + "\\" + "10011";
+		
 		
 		String[] temp = BFFrameMaker.getFiles(dir, "cgs", ".csv");
 		
@@ -12,9 +14,9 @@ public class Debug {
 			for(int i = 0; i < temp.length; ++i)
 				System.out.println(temp[i]);	
 		
-		System.out.println(BFFrameMaker.getFile(dir, "anime", ".png"));
-		System.out.println(BFFrameMaker.getFile(dir, "cgg", ".csv"));
-		System.out.println(BFFrameMaker.getFile(dir, "cgs", ".csv"));
+		System.out.println(BFStripAnimator.getFilename(BFFrameMaker.getFile(dir, "anime", ".png")));
+		System.out.println(BFStripAnimator.getFilename(BFFrameMaker.getFile(dir, "cgg", ".csv")));
+		System.out.println(BFStripAnimator.getFilename(BFFrameMaker.getFile(dir, "cgs", ".csv")));
 		
 		temp = BFFrameMaker.getFiles(dir, "cgg", ".csv");
 		

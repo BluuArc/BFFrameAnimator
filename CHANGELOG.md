@@ -2,6 +2,11 @@
 
 ## June 28, 2016
 * modified and extended CGS file finding method to two general file finding functions (both single and multiple files)
+* implemented file finding functions into main method of FrameMaker class, which greatly improves readability
+ * as a result, the program is now compatible with FFBE
+* FrameMaker now deletes frames after GIF is made
+* added handy debug function to FrameMaker
+* added todo list in animation menu (users can't see it though as its just a bunch of comments)
 
 ## June 26, 2016
 * created method to find CGS files in a folder.

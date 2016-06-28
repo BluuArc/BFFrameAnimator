@@ -11,7 +11,7 @@
 public class BFAnimationMenu {
 	public static void main(String[] args) {
 		//TODO: update these before uploading to github
-		String versionNum = "v1.1.1";
+		String versionNum = "v1.2";
 		String updateDate =  "June XX, 2016";
 		
 		//header message
@@ -32,6 +32,14 @@ public class BFAnimationMenu {
 		menu += " 3. Make GIFS from animation strips\n";
 		menu += " 4. Create animation strips from spritesheets\n";
 		menu += "Enter 0 to exit.\n";
+		
+		//agenda (in some order)
+		//TODO: mirror changes to file I/O and commentary in FrameMaker to other classes
+		//TODO: add option to make a specific animation (e.g. atk, idle, move, etc.)
+		//TODO: improve rotation (see 201000105)
+		//TODO: improve frame cropping (some issues with movement such as 860238
+		//TODO: add option to include a colored background
+		
 
 		//get option for creating one/multiple units
 		input = SimpleInput.getIntNumber("Are you making more than 1 unit? (0 for no, 1 for yes)", 0, 1);
