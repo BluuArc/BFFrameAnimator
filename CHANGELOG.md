@@ -1,5 +1,8 @@
 # Working Changelog (To be put into release notes when ready)
 
+## June 28, 2016
+* modified and extended CGS file finding method to two general file finding functions (both single and multiple files)
+
 ## June 26, 2016
 * created method to find CGS files in a folder.
 

@@ -235,6 +235,15 @@ public class BFFrameMaker {
 		return dir;
 	}// end setDirectory method
 	
+	public static int countFiles(File[] listFiles){
+		int count = 0;
+		for(int i = 0; i < listFiles.length; ++i)
+			if(listFiles[i].isFile())
+				count++;
+		
+		return count;
+	}
+	
 	//method to get list of filenames in a path
 	public static String[] getFilesInPath(String dir){
 		String[] listString = new String[1];	//StringArray to output
@@ -250,33 +259,87 @@ public class BFFrameMaker {
 			return null;
 		}
 		
-		//put filenames into string array
-		listString = new String[listFiles.length];
-		for(int i = 0; i < listFiles.length; ++i){
-			listString[i] = listFiles[i].getName();
+		//put filenames into string array (if there are any files
+		int fileCount = countFiles(listFiles);
+		if(fileCount != 0){
+			int count = 0;
+			listString = new String[fileCount];
+			for(int i = 0; i < listFiles.length; ++i){
+				if(listFiles[i].isFile()){
+					listString[count] = listFiles[i].getName();
+					count++;
+				}
+			}//end for
+		}else{
+			System.out.println("ERROR: Directory [" + dir + "] has directories, but no files in the root folder.");
+			return null;
 		}
 		
 		return listString;
-	}
+	}//end getFilesInPath
 	
-	//method to get the unit_cgg_<unitID>.csv file
-	public static String[] getCGSFiles(String dir){
+	//method to get a file path from a directory by (part of or full) name and extension
+	//extension example: ".csv"
+	//assumes that there is only one file with that name and extension
+	public static String getFile(String dir, String name, String extension){
+		String output = "";
+		String[] list = getFilesInPath(dir);
+		
+		//check name and extension parameters
+		if(name.length() == 0 || extension.length() == 0){
+			System.out.println("ERROR: name and/or extension params cannot be empty");
+			return null;
+		}
+		
+		//get file from directory
+		for(int i = 0; i < list.length; ++i){
+			if(list[i].contains(name) && list[i].contains(extension)){
+				output = list[i];
+				break;
+			}
+		}
+		
+		//check if file was found
+		if(!(output.contains(name) || output.contains(extension))){
+			System.out.println("ERROR: File with name [" + name + "] and extension [" + extension +  "] not found in [" + dir + "]");
+			return null;
+		}
+		
+		return output;
+	}//end getFile
+	
+	//method to get an array of filenames by (part of or full) name and extension
+	public static String[] getFiles(String dir, String name, String extension){
 		String[] output = new String[1];
 		
+		//check name and extension parameters
+		if(name.length() == 0 || extension.length() == 0){
+			System.out.println("ERROR: name and/or extension params cannot be empty");
+			return null;
+		}
 		
 		String[] list = getFilesInPath(dir);
-		String[] temp = new String[list.length];
+		String[] temp = new String[1];
+		
+		//check for empty directory
+		if(getFilesInPath(dir) != null || list.length != 0)
+			temp = new String[list.length];
+		else{
+			System.out.println("ERROR: No files found");
+			return null;
+		}
 		int count = 0;
 		
 		//get cgs file names from directory
 		for(int i = 0; i < list.length; ++i){
 			temp[i] = null;
-			if(list[i].contains("cgs")){
+			if(list[i].contains(name) && list[i].contains(extension)){
 				temp[count] = list[i];
 				count++;
 			}
 		}
 		
+		//put temp array into resized output array
 		output = new String[count];
 		
 		for(int i = 0; i < count; ++i){
@@ -285,13 +348,13 @@ public class BFFrameMaker {
 
 		
 		//check if file was found
-		if(!((output[0].contains("cgs")) || (output[0].contains("csv")))){
-			System.out.println("ERROR: CGS files not found in [" + dir + "]");
+		if(output.length == 0 || !(output[0].contains(name) || output[0].contains(extension))){
+			System.out.println("ERROR: Files with name [" + name + "] and extension [" + extension +  "] not found in [" + dir + "]");
 			return null;
 		}
 		
 		return output;
-	}
+	}//end getFiles
 
 	// method to initialize required pictures and files
 	public static String[] setup(String dir, String unitID) {
