@@ -166,7 +166,7 @@ public class BFFrameMakerWiki {
 				Picture2[] GifFrames = new Picture2[1]; 	//array for current working set of frames
 															//its length is the number of frames for that animation
 				
-				String type = BFStripAnimator.getType(workingFile);	//can be 1idle, 2move, 3atk, or original type like limit
+				String type = BFStripAnimator.getType(workingFile, true);	//can be 1idle, 2move, 3atk, or original type like limit
 				
 				//make animation
 				if(CGSFrames.length != 0){
@@ -427,7 +427,7 @@ public class BFFrameMakerWiki {
 
 			//copy old part to new resized part
 			Picture2 part = new Picture2(wNF, hNF);
-			part.setAllPixelsToAColor(new Color(253, 237, 43));
+			part.setAllPixelsToAColor(BFFrameMaker.transparentColor);
 			part.setAllPixelsToAnAlpha(255);
 			copyPicture(frame[i], x, y, part, sX, sY, wNF, hNF);
 			
@@ -492,7 +492,7 @@ public class BFFrameMakerWiki {
 		AnimatedGifEncoder g = new AnimatedGifEncoder();
 		g.setQuality(1);
 		g.setDispose(2);
-		g.setTransparent(new Color(253, 237, 43));
+		g.setTransparent(BFFrameMaker.transparentColor);
 		g.setRepeat(0);
 		g.start(fName);
 		for (int i = 0; i < csvFile.length; i++) {
@@ -509,15 +509,15 @@ public class BFFrameMakerWiki {
 		g.finish();
 		
 		//delete used frames
-				for(int i = 0; i < csvFile.length; ++i){
-					BFFrameMaker.printProgress("Deleting old frames. Status: ", BFFrameMaker.getPercent(i, csvFile.length));
-					int delay = BFFrameMaker.FramesToMilliseconds(csvFile[i][3]);
-					File currFrame = new File(FileChooser.getMediaDirectory() + "\\unit_" + unitID	+ "_" + type + "-F" + i + "_" + delay + ".png");
-					if(!currFrame.delete()){
-						System.out.println("ERROR: Failed to delete [" + currFrame.toString() + "]");
-					}
-					BFFrameMaker.printProgress("Deleting old frames. Status: ", BFFrameMaker.getPercent(i, csvFile.length));
-				}
+		for(int i = 0; i < csvFile.length; ++i){
+			BFFrameMaker.printProgress("Deleting old frames. Status: ", BFFrameMaker.getPercent(i, csvFile.length));
+			int delay = BFFrameMaker.FramesToMilliseconds(csvFile[i][3]);
+			File currFrame = new File(FileChooser.getMediaDirectory() + "\\unit_" + unitID	+ "_" + type + "-F" + i + "_" + delay + ".png");
+			if(!currFrame.delete()){
+				System.out.println("ERROR: Failed to delete [" + currFrame.toString() + "]");
+			}
+			BFFrameMaker.printProgress("Deleting old frames. Status: ", BFFrameMaker.getPercent(i, csvFile.length));
+		}
 	}// end makeGif method
 
 } // end of class

@@ -173,7 +173,7 @@ public class BFFrameMaker {
 				Picture2[] GifFrames = new Picture2[1]; 	//array for current working set of frames
 															//its length is the number of frames for that animation
 				
-				String type = BFStripAnimator.getType(workingFile);	//can be 1idle, 2move, 3atk, or original type like limit
+				String type = BFStripAnimator.getType(workingFile, true);	//can be 1idle, 2move, 3atk, or original type like limit
 				
 				//make animation
 				if(CGSFrames.length != 0){
