@@ -18,7 +18,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-
 import javax.imageio.ImageIO;
 
 public class BFFrameMaker {
@@ -26,7 +25,7 @@ public class BFFrameMaker {
 	public static boolean debugOutput = true;
 	
 	public static void main(String[] args) throws Exception {
-		System.out.println("Begin Program Execution\n");
+		System.out.println("Begin Program Execution of BFFrameMaker\n");
 
 		// set variables
 		boolean useOpacity = false;			//option for opacity
@@ -42,9 +41,8 @@ public class BFFrameMaker {
 		if (args.length != 0)
 			useArgs = true;
 
-		// if no commandline parameters are given
+		// if no command line parameters are given
 		if (!useArgs) {
-			
 			//set opacity option
 			opacOption = SimpleInput
 					.getIntNumber("Would you like to use opacity? (0 for no, 1 for yes, anything else to exit)");
@@ -203,7 +201,7 @@ public class BFFrameMaker {
 		// reset directory
 		setDirectory(dir);
 
-		System.out.println("\nEnd Program Execution");
+		System.out.println("\nEnd Program Execution of BFFrameMaker");
 	} // end main method
 
 	////////////////////////////// methods\\\\\\\\\\\\\\\\\\\\\\\\\\
@@ -856,7 +854,7 @@ public class BFFrameMaker {
 		return lowerCoord;
 	}// end getLowerBound method
 
-	// method to find lefmost coordinate where leftmost part ends
+	// method to find leftmost coordinate where leftmost part ends
 	public static int getLeftBound(Picture2[] part) {
 		int upperCoord = 5000; // this will be the leftmost y coordinate
 
@@ -933,6 +931,7 @@ public class BFFrameMaker {
 	public static int[] getBounds(Picture2[] part) {
 		int[] bounds = new int[4];
 
+		//TODO: improve this so that it's more accurate (i.e. not 25% increments)
 		printProgress("Getting bounds. Status: ", 0);
 		bounds[0] = getUpperBound(part);
 
@@ -1013,7 +1012,7 @@ public class BFFrameMaker {
 			fName = fName + "_opac";
 		fName = fName + ".gif";
 		
-		//save gif as  unit_<unitID>_<type>_<n/opac>.gif
+		//save gif as unit_<unitID>_<type>_<n/opac>.gif
 
 		AnimatedGifEncoder g = new AnimatedGifEncoder();
 		g.setQuality(1);

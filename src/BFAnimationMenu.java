@@ -36,9 +36,11 @@ public class BFAnimationMenu {
 		//agenda (in some order)
 		//TODO: mirror changes to file I/O and commentary in FrameMaker to other classes
 		//TODO: add option to make a specific animation (e.g. atk, idle, move, etc.)
+		//TODO: "properly" implement command line usage
 		//TODO: improve rotation (see 201000105)
-		//TODO: improve frame cropping (some issues with movement such as 860238
+		//TODO: improve frame cropping (some issues with movement such as 860238)
 		//TODO: add option to include a colored background
+		//TODO: make (separately?) program to find yellow frames
 		
 
 		//get option for creating one/multiple units
