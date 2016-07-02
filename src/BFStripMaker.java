@@ -20,6 +20,10 @@ public class BFStripMaker {
 	public static void main(String[] args) {
 		System.out.println("Begin Program Execution of BFStripMaker\n");
 		
+		//agenda
+		//TODO: fix parsing CGS
+		
+		
 		//set variables
 		boolean useArgs = false;			//options for use of command line arguments
 		String[] unitIDs = new String[1];	//array of unit IDs

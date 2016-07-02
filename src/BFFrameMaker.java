@@ -532,7 +532,7 @@ public class BFFrameMaker {
 		return frame;
 	}// end convertToInt method
 
-	// method to save copy a current part from a spritesheet to a picture2 object
+	// method to copy a current part from a spritesheet to a picture2 object
 	public static Picture2 copyPart(Picture2 sSheet, Picture2 part, int[] frame, int currentPart, boolean useOpacity) {
 		//get data for current frame
 		int frameX = frame[2 + (currentPart * 11)];
@@ -554,6 +554,7 @@ public class BFFrameMaker {
 		Pixel sourcePix;
 		Pixel targetPix;
 
+		//offset pixels are positioned relative to center of frame; these are coords of top left of part
 		int offsetX = (part.getWidth() / 2) + frameX;
 		int offsetY = (part.getHeight() / 2) + frameY;
 
@@ -561,7 +562,7 @@ public class BFFrameMaker {
 		int y = 0;
 		for (x = 0; x < w; x++) {
 			for (y = 0; y < h; y++) {
-				// get current pixels
+				// get pixels at current position
 				int sourceX = spriteX + x;
 				int sourceY = spriteY + y;
 				if (sourceX >= sSheet.getWidth())
@@ -628,12 +629,12 @@ public class BFFrameMaker {
 			
 			for (x = 0; x < w; x++) {
 				for (y = 0; y < h; y++) {
-					//get source pixels
+					//get source pixel at current position
 					int sourceX = offsetX + x;
 					int sourceY = offsetY + y;
 					sourcePix = tempPart.getPixel(sourceX, sourceY);
 					
-					//set target pixels
+					//get target pixel position
 					int targetX = offsetX;
 					int targetY = offsetY;
 					
@@ -687,13 +688,9 @@ public class BFFrameMaker {
 				// get the height
 				int testHeight = frames[csvFile[i][0]][3 + (j * 11)];
 
-				/*
-				 * //find farthest value of height if it's negative by changing
-				 * the sign and adding the height of the part if(testHeight < 0)
-				 * testHeight = (testHeight - frames[csvFile[i][0]][11 + (j *
-				 * 11)]) * -1;
-				 */
-
+				//find farthest value of height if it's negative by changing the sign 
+				//and adding the height of the part
+				
 				if (testHeight > 0)
 					testHeight = testHeight * -1;
 
@@ -724,9 +721,7 @@ public class BFFrameMaker {
 				int testWidth = frames[csvFile[i][0]][2 + (j * 11)];
 				/*
 				 * //find farthest value of width if it's positive by adding the
-				 * width of the part if(testWidth >= 0) testWidth = (testWidth +
-				 * frames[csvFile[i][0]][10 + (j * 11)]); else testWidth =
-				 * testWidth * -1;
+				 * width of the part
 				 */
 
 				if (testWidth < 0)
@@ -835,7 +830,7 @@ public class BFFrameMaker {
 					// get current pixels
 					p = part[i].getPixel(x, y);
 					Color c = p.getColor();
-					// save y coord if it's lower than the previously saved coord
+					// save y coord if it's greater than the previously saved coord
 					// and if it's not the transparent color
 					if ((y > lowerCoord) && (Pixel.colorDistance(c, transparentColor) != 0))
 						lowerCoord = y;
@@ -870,7 +865,8 @@ public class BFFrameMaker {
 					// get current pixels
 					p = part[i].getPixel(x, y);
 					Color c = p.getColor();
-					// save y coord if it's lower than the previously saved coord
+					
+					// save x coord if it's lower than the previously saved coord
 					// and if it's not the transparent color
 					if ((x < upperCoord) && (Pixel.colorDistance(c, transparentColor) != 0))
 						upperCoord = x;
@@ -908,7 +904,7 @@ public class BFFrameMaker {
 					// get current pixels
 					p = part[i].getPixel(x, y);
 					Color c = p.getColor();
-					// save y coord if it's lower than the previously saved coord
+					// save y coord if it's greater than the previously saved coord
 					// and if it's not the transparent color
 					if ((x > lowerCoord) && (Pixel.colorDistance(c, transparentColor) != 0))
 						lowerCoord = x;
