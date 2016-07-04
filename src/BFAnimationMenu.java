@@ -35,6 +35,10 @@ public class BFAnimationMenu {
 		menu += "Enter 0 to exit.\n";
 		
 		//agenda (in some order)
+		//TODO: fix output for making strips
+		//TODO: fix frame deletion progress output
+		//TODO: create print title method -> System.out.println("[" + input + "]");
+		//TODO: Double check Begin/End messages
 		//TODO: "properly" implement command line usage
 		//TODO: make comments JDocs compatible
 		//TODO: error output (ordering of missing?)

@@ -3,3 +3,4 @@ bin/SimplePictureProperties.txt
 .settings/*
 .classpath
 .project
+bin/Debug.class
