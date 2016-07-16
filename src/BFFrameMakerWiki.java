@@ -17,8 +17,10 @@ import java.io.File;
 import javax.imageio.ImageIO;
 
 public class BFFrameMakerWiki {
+	public static String className = "BFFrameMakerWiki";
+	
 	public static void main(String[] args) throws Exception {
-		System.out.println("Begin Program Execution of BFFrameMakerWiki\n");
+		System.out.println("Begin Program Execution of " + className + "\n");
 
 		// set variables
 		boolean useOpacity = false;			//option for opacity
@@ -194,7 +196,11 @@ public class BFFrameMakerWiki {
 		// reset directory
 		BFFrameMaker.setDirectory(dir);
 
-		System.out.println("\nEnd Program Execution of BFFrameMaker");
+		System.out.println("\nEnd Program Execution of " + className + "\n");
+		if(useArgs) //return to animation menu
+			return;
+		else
+			System.exit(0);
 	} // end main method
 
 	////////////////////////////// methods\\\\\\\\\\\\\\\\\\\\\\\\\\

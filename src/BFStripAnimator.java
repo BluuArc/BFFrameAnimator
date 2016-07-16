@@ -17,8 +17,10 @@ import java.io.File;
 import javax.imageio.ImageIO;
 
 public class BFStripAnimator {
+	public static String className = "BFStripAnimator";
+	
 	public static void main(String[] args) throws Exception {
-		System.out.println("Begin Program Execution of BFStripAnimator\n");
+		System.out.println("Begin Program Execution of " + className + "\n");
 
 		// set variables
 		boolean wiki = false;				//option for wiki
@@ -166,7 +168,10 @@ public class BFStripAnimator {
 					GifFrames = extractFrames(BFFrameMaker.getFile(workingDir, getType(workingFile, false), ".png"), unitID, type, BFFrameMaker.getNumFrames(workingFile), wiki);
 					
 					//crop and save frames
-					BFFrameMaker.makeNewFrame(GifFrames, unitID, CGSFrames, type);
+					if(!wiki)
+						BFFrameMaker.makeNewFrame(GifFrames, unitID, CGSFrames, type);
+					else
+						makeNewFrameWiki(GifFrames, unitID, type, CGSFrames);
 					
 					//make GIF from frames
 					makeGif(dirGif, unitID, type, CGSFrames, wiki);
@@ -183,7 +188,11 @@ public class BFStripAnimator {
 
 		System.out.println("Don't forget to clear out the frames folder.");
 
-		System.out.println("\nEnd Program Execution of BFStripAnimator");
+		System.out.println("\nEnd Program Execution of " + className + "\n");
+		if(useArgs) //return to animation menu
+			return;
+		else
+			System.exit(0);
 	} // end main method
 
 	////////////////////////////// methods\\\\\\\\\\\\\\\\\\\\\\\\\\
@@ -335,7 +344,7 @@ public class BFStripAnimator {
 			if(!currFrame.delete()){
 				System.out.println("ERROR: Failed to delete [" + currFrame.toString() + "]");
 			}
-			BFFrameMaker.printProgress("Deleting old frames. Status: ", BFFrameMaker.getPercent(i, csvFile.length));
+			BFFrameMaker.printProgress("Deleting old frames. Status: ", BFFrameMaker.getPercent(i+1, csvFile.length));
 		}
 	}// end makeGif method
 

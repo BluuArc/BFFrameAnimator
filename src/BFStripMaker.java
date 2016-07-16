@@ -16,9 +16,10 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 
 public class BFStripMaker {
-
+	public static String className = "BFStripMaker";
+	
 	public static void main(String[] args) {
-		System.out.println("Begin Program Execution of BFStripMaker\n");
+		System.out.println("Begin Program Execution of " + className + "\n");
 		
 		//agenda
 		//TODO: fix parsing CGS
@@ -151,7 +152,7 @@ public class BFStripMaker {
 				
 				//make animation
 				if(CGSFrames.length != 0){
-					System.out.println("\n[Making [" + type + "] GIF for " + unitID + "]");
+					System.out.println("\n[Making [" + type + "] strip for " + unitID + "]");
 					GifFrames = new Picture2[CGSFrames.length];	//resize array to correct length of animation
 					
 					//make frames from sprite 
@@ -174,10 +175,13 @@ public class BFStripMaker {
 
 		// reset directory
 		BFFrameMaker.setDirectory(dir);
-
-		System.out.println("Don't forget to clear out the frames folder in " + dirFrame);
-
-	}
+		
+		System.out.println("\nEnd Program Execution of " + className + "\n");
+		if(useArgs) //return to animation menu
+			return;
+		else
+			System.exit(0);
+	}//end main
 	
 	// method to make a frame from a spritesheet and save it to the right
 	// directory
@@ -576,7 +580,7 @@ public class BFStripMaker {
 			if(!currFrame.delete()){
 				System.out.println("ERROR: Failed to delete [" + currFrame.toString() + "]");
 			}
-			BFFrameMaker.printProgress("Deleting old frames. Status: ", BFFrameMaker.getPercent(i, csvFile.length));
+			BFFrameMaker.printProgress("Deleting old frames. Status: ", BFFrameMaker.getPercent(i+1, csvFile.length));
 		}
 	}// end makeGif method
 }

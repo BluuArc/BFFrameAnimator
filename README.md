@@ -14,10 +14,10 @@ Program to create animation strips and GIFs of unit sprites for the mobile game 
  * the idle animation of a unit with a minimum height of 140px for the BF wiki from an animation strip
  * Note that the suffices of the files will tell you which option you chose
     * `unit_unitID_type_opac.gif` for one of the three animations with opacity values
-     * replace `opac` with `nopac` to get the name of the file with no apacity values
+     * replace `opac` with `nopac` to get the name of the file with no opacity values
      * replace `opac` with `strip` to get the name of the file created from an animation strip
     * same applies to `unit_ills_anime_unitID_opac.gif` for a wiki animation with opacity values
-* This program also outputs animation strips, which are basically images where the frames are layed out horizontally; one strip represents one full animation (i.e. idle, move, atk).
+* This program also outputs animation strips, which are basically images where the frames are laid out horizontally; one strip represents one full animation (i.e. idle, move, atk).
 
 ## Setup
 What this program does is it takes a .txt file (which I'll refer to as `list.txt`) and uses it to reference the locations of the source files and the location of where the results will be saved. Below are examples of the list.txt and the file-tree for accessing and saving files.
@@ -56,7 +56,7 @@ Download the BFFrameAnimator.jar in the root folder (or compile the classes in t
 * This program uses the following to function. Credits to them for their portions of my program.
   * A modified and stripped-down version of [bookClasses](http://home.cc.gatech.edu/TeaParty/47), which is licensed under a Creative Commons Attribution 3.0 US License, to handle some image operations and file operations
   * The Java class [AnimatedGifEncoder](http://www.java2s.com/Code/Java/2D-Graphics-GUI/AnimatedGifEncoder.htm) to handle GIF creation from one or more image files.
-  * There are also code snippets from the internet that I may adapt to use in my program. Those sources can be found near their relative blocks of code.
+  * There are also code snippets from the Internet that I may adapt to use in my program. Those sources can be found near their relative blocks of code.
 
 ## Licensing
 

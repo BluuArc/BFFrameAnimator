@@ -1,4 +1,12 @@
-# Working Changelog (To be put into release notes when ready)
+# Working Change Log (To be put into release notes when ready)
+
+## July 15, 2016
+* fixed bug where wiki GIFs created from animation strips weren't the correct height (minimum 140px)
+* fix bug in StripMaker where deleting frames message didn't output properly
+* fixed typos in StripMaker (messages now say strips instead of GIFs) 
+* add proper program termination from the animation menu (so JVM actually exits instead of returning)
+* fixed begin/end message issues when running classes 
+
 
 ## July 2, 2016
 * finished clean up and reflection of changes from FrameMaker to BFStripMaker class

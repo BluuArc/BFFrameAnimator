@@ -12,8 +12,8 @@ public class BFAnimationMenu {
 	public static void main(String[] args) {
 		//TODO: update these before releasing
 		//TODO: look through all files for todos before uploading
-		String versionNum = "v1.2";
-		String updateDate =  "July 2, 2016";
+		String versionNum = "v1.x";
+		String updateDate =  "July XX, 2016";
 		
 		//header message
 		String license = "Welcome to BFFrameAnimator.\n";
@@ -35,10 +35,7 @@ public class BFAnimationMenu {
 		menu += "Enter 0 to exit.\n";
 		
 		//agenda (in some order)
-		//TODO: fix output for making strips
-		//TODO: fix frame deletion progress output
 		//TODO: create print title method -> System.out.println("[" + input + "]");
-		//TODO: Double check Begin/End messages
 		//TODO: "properly" implement command line usage
 		//TODO: make comments JDocs compatible
 		//TODO: error output (ordering of missing?)
@@ -96,7 +93,8 @@ public class BFAnimationMenu {
 		
 		//ending message
 		System.out.println("\nGoodbye.");
-		return;
+		
+		System.exit(0);
 	} // end main method
 
 	// method to get opacity or wiki parameter for arguments
