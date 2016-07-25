@@ -12,8 +12,8 @@ public class BFAnimationMenu {
 	public static void main(String[] args) {
 		//TODO: update these before releasing
 		//TODO: look through all files for todos before uploading
-		String versionNum = "v1.x";
-		String updateDate =  "July XX, 2016";
+		String versionNum = "v1.2.2";
+		String updateDate =  "July 25, 2016";
 		
 		//header message
 		String license = "Welcome to BFFrameAnimator.\n";
@@ -28,11 +28,11 @@ public class BFAnimationMenu {
 
 		//create menu
 		menu = "What would you like to do?\n";
-		menu += " 1. Make all animations from spritesheets\n";
-		menu += " 2. Make wiki GIFs from spritesheets\n";
-		menu += " 3. Make GIFS from animation strips\n";
-		menu += " 4. Create animation strips from spritesheets\n";
-		menu += "Enter 0 to exit.\n";
+		String[] menuOptions = {"Make all animations from spritesheets",
+								"Make wiki GIFs from spritesheets",
+								"Make GIFS from animation strips",
+								"Create animation strips from spritesheets",
+								"Exit"};
 		
 		//agenda (in some order)
 		//TODO: create print title method -> System.out.println("[" + input + "]");
@@ -52,7 +52,7 @@ public class BFAnimationMenu {
 		//TODO: create wiki?
 
 		//get option for creating one/multiple units
-		input = SimpleInput.getIntNumber("Are you making more than 1 unit? (0 for no, 1 for yes)", 0, 1);
+		input = SimpleInput.getYesNoOption("Are you making more than 1 unit?");
 		System.out.println(
 				"Choose the list.txt file that contains all the unit IDs. Its directory is a baseline for all file operations");
 		
@@ -65,9 +65,10 @@ public class BFAnimationMenu {
 			arguments[1] = "no input";
 
 			// while loop to make multiple versions of the same set of units
-			while (input != 0) {
-				lastInput = "Your last input was [" + input + " " + arguments[1] + "]";
-				input = SimpleInput.getIntNumber(menu + lastInput, 0, 4);
+			//exit option is at end of array
+			while (input != menuOptions.length) {
+				lastInput = "\nYour last input was [" + input + " " + arguments[1] + "]";
+				input = SimpleInput.getListOption(menu+lastInput, menuOptions)+1;
 				executeCommand(input, arguments);
 			} // end while menu loop
 		} else {// if only making 1 unit
@@ -78,14 +79,15 @@ public class BFAnimationMenu {
 			arguments[1] = FileChooser.pickAFile();
 			arguments[2] = "no input";
 
-			while (input != 0) {
-				lastInput = "Your last input was [" + input + " " + arguments[2] + "]";
+			//exit option is at end of array
+			while (input != menuOptions.length) {
+				lastInput = "\nYour last input was [" + input + " " + arguments[2] + "]";
 
 				// get unitID
 				arguments[0] = Integer.toString(SimpleInput.getIntNumber("What unit do you want to make?"));
 
 				// get option
-				input = SimpleInput.getIntNumber(menu + lastInput, 0, 4);
+				input = SimpleInput.getListOption(menu+lastInput, menuOptions)+1;
 				executeCommand(input, arguments);
 			} // end while menu loop
 
@@ -102,9 +104,10 @@ public class BFAnimationMenu {
 		switch (option) {
 		case 1: //opacity
 			return Integer
-					.toString(SimpleInput.getIntNumber("Would you like to use opacity? (0 for no, 1 for yes)", 0, 1));
+					.toString(SimpleInput.getYesNoOption("Would you like to use opacity?"));
 		case 2: //wiki
-			return Integer.toString(SimpleInput.getIntNumber("What are you making? (0 for all, 1 for wiki)", 0, 1));
+			String[] options = {"All", "Wiki"};
+			return Integer.toString(SimpleInput.getButtonOption("What are you making?", options));
 		default:
 			return "Error";
 		}// end switch
