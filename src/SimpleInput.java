@@ -162,5 +162,62 @@ public class SimpleInput {
 		// return the answer
 		return answer;
 	}
+	
+	/**
+	 * Method to let the user choose from a list of options. The dialog will keep appearing
+	 * till an option is chosen.
+	 * 
+	 * @param message
+	 *            the message to display to the user
+	 * @param options
+	 * 			  the options to choose from
+	 * @return the option chosen relative to the index of the option
+	 */
+	public static int getListOption(Object message, Object[] options) {
+		boolean okay = false;
+		String result = "";
+		int answer = -1;
+		do {
+			result = (String)JOptionPane.showInputDialog(null, message, "SimpleInput", JOptionPane.INFORMATION_MESSAGE, null, options, options[0]);
+			
+			//get index of answer to return
+			for(int i = 0; i < options.length; ++i){
+				if(result.equals(options[i]))
+					answer = i;
+			}
+			
+			//loop if answer is not within range
+			if(answer >= 0 && answer < options.length)
+				okay = true;
+		} while (!okay);
+
+		// return the answer
+		return answer;
+	}
+	
+	/**
+	 * Method to let the user click a button from a list of options. 
+	 * 
+	 * @param message
+	 *            the message to display to the user
+	 * @param options
+	 * 			  the options to choose from
+	 * @return the option chosen relative to the index of the option
+	 */
+	public static int getButtonOption(String message, Object[] options) {
+		return JOptionPane.showOptionDialog(null, message, "SimpleInput", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE,null,options,options[0]);
+	}
+	
+	/**
+	 * Method to get a Yes/No input by the user.
+	 * 
+	 * @param message
+	 *            the message to display to the user
+	 * @return the option chosen relative to the index of the option
+	 */
+	public static int getYesNoOption(String message) {
+		String[] options = {"No", "Yes"};
+		return getButtonOption(message,options);
+	}
 
 } // end of SimpleInput class
