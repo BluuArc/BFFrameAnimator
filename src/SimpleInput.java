@@ -213,7 +213,7 @@ public class SimpleInput {
 	 * 
 	 * @param message
 	 *            the message to display to the user
-	 * @return the option chosen relative to the index of the option
+	 * @return a value of 0 for No and 1 for Yes
 	 */
 	public static int getYesNoOption(String message) {
 		String[] options = {"No", "Yes"};
