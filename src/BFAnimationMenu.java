@@ -12,8 +12,8 @@ public class BFAnimationMenu {
 	public static void main(String[] args) {
 		//TODO: update these before releasing
 		//TODO: look through all files for todos before uploading
-		String versionNum = "v1.2.2";
-		String updateDate =  "July 25, 2016";
+		String versionNum = "v1.2.x";
+		String updateDate =  "August XX, 2016";
 		
 		//header message
 		String license = "Welcome to BFFrameAnimator.\n";
