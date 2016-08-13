@@ -39,8 +39,8 @@ public class BFFrameMakerWiki {
 		// if no command line parameters are given
 		if (!useArgs) {
 			//set opacity option
-			String[] options = {"No", "Yes", "Exit"};
-			opacOption = SimpleInput.getButtonOption("Would you like to use opacity?", options);
+			opacOption = SimpleInput
+					.getIntNumber("Would you like to use opacity? (0 for no, 1 for yes, anything else to exit)");
 			if(opacOption != 0 && opacOption != 1){
 				System.out.println("Exiting application.");
 				return;

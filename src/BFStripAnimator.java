@@ -39,8 +39,8 @@ public class BFStripAnimator {
 		// if no command line parameters are given
 		if (!useArgs) {
 			//set wiki option
-			String[] options = {"All", "Wiki", "Exit"};
-			wikiOption = SimpleInput.getButtonOption("What are you making?", options);
+			wikiOption = SimpleInput
+					.getIntNumber("What are you making? (0 for all, 1 for wiki, anything else to exit)");
 			if(wikiOption != 0 && wikiOption != 1){
 				System.out.println("Exiting application.");
 				return;
