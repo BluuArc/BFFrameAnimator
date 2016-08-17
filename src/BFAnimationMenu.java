@@ -35,7 +35,9 @@ public class BFAnimationMenu {
 								"Exit"};
 		
 		//agenda (in some order)
-		//TODO: create print title method -> System.out.println("[" + input + "]");
+		//TODO: look into shadows disappearing on opac option (wiki only?)
+		//TODO: change methods so that there is a method that takes in a CGG file, a CGS file, and the sprite sheet (for modularity and for units that share files)
+		//TODO: implement debug messages
 		//TODO: "properly" implement command line usage
 		//TODO: make comments JDocs compatible
 		//TODO: error output (ordering of missing?)
