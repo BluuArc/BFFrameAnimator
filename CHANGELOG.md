@@ -1,5 +1,11 @@
 # Working Change Log (To be put into release notes when ready)
 
+## October 21, 2016
+* added numbers next to menu options to make last input clearer
+* there is now a method that takes in a CGG file, a CGS file, and the sprite sheet array (for modularity and for units that share files)
+* updated relevant methods to take in Picture2 arrays for the sprite sheet (for units that have more than 1 source file
+* added support for generating the Summoner unit
+
 ## July 25, 2016
 * Change some menus to limit input to those options (using lists or buttons)
 * v1.2.2 Release

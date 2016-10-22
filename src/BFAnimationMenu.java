@@ -12,8 +12,8 @@ public class BFAnimationMenu {
 	public static void main(String[] args) {
 		//TODO: update these before releasing
 		//TODO: look through all files for todos before uploading
-		String versionNum = "v1.2.x";
-		String updateDate =  "August XX, 2016";
+		String versionNum = "v1.3.0";
+		String updateDate =  "October 21, 2016";
 		
 		//header message
 		String license = "Welcome to BFFrameAnimator.\n";
@@ -28,15 +28,15 @@ public class BFAnimationMenu {
 
 		//create menu
 		menu = "What would you like to do?\n";
-		String[] menuOptions = {"Make all animations from spritesheets",
-								"Make wiki GIFs from spritesheets",
-								"Make GIFS from animation strips",
-								"Create animation strips from spritesheets",
-								"Exit"};
+		String[] menuOptions = {"1. Make all animations from spritesheets",
+								"2. Make wiki GIFs from spritesheets",
+								"3. Make GIFS from animation strips",
+								"4. Create animation strips from spritesheets",
+								"5. Exit"};
 		
 		//agenda (in some order)
+		//TODO: rewrite to follow OOP principles (possibly in December)
 		//TODO: look into shadows disappearing on opac option (wiki only?)
-		//TODO: change methods so that there is a method that takes in a CGG file, a CGS file, and the sprite sheet (for modularity and for units that share files)
 		//TODO: implement debug messages
 		//TODO: "properly" implement command line usage
 		//TODO: make comments JDocs compatible
@@ -50,7 +50,7 @@ public class BFAnimationMenu {
 		//TODO: improve rotation (see 201000105)
 		//TODO: improve frame cropping (some issues with movement such as 860238)
 		//TODO: add option to include a colored background
-		//TODO: make (separately?) program to find yellow frames
+		//TODO: make (separately?) program to find yellow frames (via corners)
 		//TODO: create wiki?
 
 		//get option for creating one/multiple units

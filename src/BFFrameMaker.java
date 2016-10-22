@@ -18,18 +18,20 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+
 import javax.imageio.ImageIO;
 
 public class BFFrameMaker {
 	public static Color transparentColor = new Color(253, 237, 43);
 	public static boolean debugOutput = true;
 	public static String className = "BFFrameMaker";
+	private static boolean useOpacity;
 	
 	public static void main(String[] args) throws Exception {
 		System.out.println("Begin Program Execution of " + className + "\n");
 
 		// set variables
-		boolean useOpacity = false;			//option for opacity
+		useOpacity = false;			//option for opacity
 		boolean useArgs = false;			//option for use of command line arguments
 		int opacOption;						//option for opacity
 		String[] unitIDs = new String[1];	//array of unit IDs
@@ -136,8 +138,16 @@ public class BFFrameMaker {
 			
 			//get files
 			System.out.println("Getting CSV files and sprite sheet");
-			String[] cgsNames = getFiles(workingDir, "cgs", ".csv");					
-			Picture2 sSheet = new Picture2(getFile(workingDir, "anime", ".png"));		//sprite sheet contains image data
+			String[] cgsNames = getFiles(workingDir, "cgs", ".csv");	
+			String[] sheetNames = getFiles(workingDir, "anime", ".png");
+			Picture2 sSheet[] = new Picture2[sheetNames.length];
+			if(sheetNames.length == 2 && getFiles(workingDir, "_U.png", ".png").length == 1 && getFiles(workingDir, "_L.png", ".png").length == 1){	//summoner unit
+				sSheet[0] = new Picture2(getFile(workingDir, "_L.png", ".png"));
+				sSheet[1] = new Picture2(getFile(workingDir, "_U.png", ".png"));
+			}else{ //default
+				for(int c = 0; c < sheetNames.length; ++c)	sSheet[c] = new Picture2(sheetNames[c]);
+			}
+			
 			workingFile = getFile(workingDir, "cgg", ".csv");
 			
 			//check if getting files succeeded
@@ -157,45 +167,7 @@ public class BFFrameMaker {
 				return;
 			}//end check
 			
-			//parse CGG file
-			System.out.println("Parsing CGG File"); 					//CGG file contains position data for all animations 
-			int[][] CGGFrames = new int[getNumFrames(workingFile)][];	//reference: frames[frame number][parameters for frame]
-			parseCSV(workingFile, CGGFrames);
-
-
-			//for each CGS file, create animation
-			for(int c = 0; c < cgsNames.length; ++c){
-				
-				System.out.println("Parsing CGS File");
-				workingFile = cgsNames[c];
-				int [][] CGSFrames = new int[getNumFrames(workingFile)][]; //CGS files contain frame order and delay for animation
-				parseCSV(workingFile, CGSFrames);
-				
-				Picture2[] GifFrames = new Picture2[1]; 	//array for current working set of frames
-															//its length is the number of frames for that animation
-				
-				String type = BFStripAnimator.getType(workingFile, true);	//can be 1idle, 2move, 3atk, or original type like limit
-				
-				//make animation
-				if(CGSFrames.length != 0){
-					System.out.println("\n[Making [" + type + "] GIF for " + unitID + "]");
-					GifFrames = new Picture2[CGSFrames.length];	//resize array to correct length of animation
-					
-					//make frames from sprite sheet
-					for(int i = 0; i < CGSFrames.length; ++i){
-						GifFrames[i] = makeFrame(unitID, sSheet, CGGFrames, CGSFrames, i, useOpacity);
-					}
-					
-					//crop and save frames 
-					makeNewFrame(GifFrames, unitID, CGSFrames, type);
-					
-					//make GIF from frames
-					makeGif(dirGif, unitID, type, CGSFrames, useOpacity);
-				}else{
-					System.out.println("ERROR: File error with [" + workingFile + "]");
-				}
-				System.out.println("\n");
-			}//end for each CGS file
+			makeAnimation(workingFile, cgsNames, sSheet, unitID, dirGif);
 			System.out.println("[Finished making GIFs for " + unitID + "]");
 		} // end for each unit ID
 
@@ -210,6 +182,45 @@ public class BFFrameMaker {
 	} // end main method
 
 	////////////////////////////// methods\\\\\\\\\\\\\\\\\\\\\\\\\\
+	
+	public static void makeAnimation(String cggFile, String cgsFiles[], Picture2 sheets[], String unitID, String dirGif) throws Exception{
+		//parse CGG file
+		System.out.println("Parsing CGG File"); 					//CGG file contains position data for all animations 
+		int[][] CGGFrames = new int[getNumFrames(cggFile)][];	//reference: frames[frame number][parameters for frame]
+		parseCSV(cggFile, CGGFrames);
+
+		for(int c = 0; c < cgsFiles.length; ++c){
+			System.out.println("Parsing CGS File");
+			String workingFile = cgsFiles[c];
+			int [][] CGSFrames = new int[getNumFrames(workingFile)][]; //CGS files contain frame order and delay for animation
+			parseCSV(workingFile, CGSFrames);
+			
+			Picture2[] GifFrames = new Picture2[1]; 	//array for current working set of frames
+														//its length is the number of frames for that animation
+			
+			String type = BFStripAnimator.getType(workingFile, true);	//can be 1idle, 2move, 3atk, or original type like limit or skill
+			
+			//make animation
+			if(CGSFrames.length != 0){
+				System.out.println("\n[Making [" + type + "] GIF for " + unitID + "]");
+				GifFrames = new Picture2[CGSFrames.length];	//resize array to correct length of animation
+				
+				//make frames from sprite sheet
+				for(int i = 0; i < CGSFrames.length; ++i){
+					GifFrames[i] = makeFrame(unitID, sheets, CGGFrames, CGSFrames, i, useOpacity);
+				}
+				
+				//crop and save frames 
+				makeNewFrame(GifFrames, unitID, CGSFrames, type);
+				
+				//make GIF from frames
+				makeGif(dirGif, unitID, type, CGSFrames, useOpacity);
+			}else{
+				System.out.println("ERROR: File error with [" + workingFile + "]");
+			}
+			System.out.println("\n");
+		}
+	}//end makeAnimation
 
 	// method to setMediaPath using a picture, assuming that the images are in
 	// one directory
@@ -538,7 +549,7 @@ public class BFFrameMaker {
 	}// end convertToInt method
 
 	// method to copy a current part from a spritesheet to a picture2 object
-	public static Picture2 copyPart(Picture2 sSheet, Picture2 part, int[] frame, int currentPart, boolean useOpacity) {
+	public static Picture2 copyPart(Picture2 sSheets[], Picture2 part, int[] frame, int currentPart, boolean useOpacity) {
 		//get data for current frame
 		int frameX = frame[2 + (currentPart * 11)];
 		int frameY = frame[3 + (currentPart * 11)];
@@ -550,6 +561,9 @@ public class BFFrameMaker {
 		int spriteY = frame[9 + (currentPart * 11)];
 		int w = frame[10 + (currentPart * 11)];
 		int h = frame[11 + (currentPart * 11)];
+		int page_id = frame[12 + (currentPart * 11)];
+		
+		Picture2 sSheet = sSheets[page_id];	//get correct sheet to use
 		
 		//opacity ranges from 0.0 to 1.0 since it's a multiplier
 		double opacity = opac / 100.0;
@@ -749,7 +763,7 @@ public class BFFrameMaker {
 
 	// method to make a frame from a spritesheet and save it to the right
 	// directory
-	public static Picture2 makeFrame(String unitID, Picture2 sSheet, int[][] frames, int[][] csvFile, int counter,
+	public static Picture2 makeFrame(String unitID, Picture2 sSheet[], int[][] frames, int[][] csvFile, int counter,
 			boolean useOpacity) {
 		int currentFrame = csvFile[counter][0];
 		int[] frame = frames[currentFrame];

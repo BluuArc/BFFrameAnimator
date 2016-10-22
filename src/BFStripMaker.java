@@ -111,7 +111,14 @@ public class BFStripMaker {
 			//get files
 			System.out.println("Getting CSV files and sprite sheet");
 			String[] cgsNames = BFFrameMaker.getFiles(workingDir, "cgs", ".csv");					
-			Picture2 sSheet = new Picture2(BFFrameMaker.getFile(workingDir, "anime", ".png"));		//sprite sheet contains image data
+			String[] sheetNames = BFFrameMaker.getFiles(workingDir, "anime", ".png");
+			Picture2 sSheet[] = new Picture2[sheetNames.length];
+			if(sheetNames.length == 2 && BFFrameMaker.getFiles(workingDir, "_U.png", ".png").length == 1 && BFFrameMaker.getFiles(workingDir, "_L.png", ".png").length == 1){	//summoner unit
+				sSheet[0] = new Picture2(BFFrameMaker.getFile(workingDir, "_L.png", ".png"));
+				sSheet[1] = new Picture2(BFFrameMaker.getFile(workingDir, "_U.png", ".png"));
+			}else{ //default
+				for(int c = 0; c < sheetNames.length; ++c)	sSheet[c] = new Picture2(sheetNames[c]);
+			}
 			workingFile = BFFrameMaker.getFile(workingDir, "cgg", ".csv");
 			
 
@@ -183,9 +190,48 @@ public class BFStripMaker {
 			System.exit(0);
 	}//end main
 	
+	public static void makeAnimation(String cggFile, String cgsFiles[], Picture2 sheets[], String unitID, String dirGif, String dir) throws Exception{
+		//parse CGG file
+		System.out.println("Parsing CGG File"); 					//CGG file contains position data for all animations 
+		int[][] CGGFrames = new int[BFFrameMaker.getNumFrames(cggFile)][];	//reference: frames[frame number][parameters for frame]
+		BFFrameMaker.parseCSV(cggFile, CGGFrames);
+
+		for(int c = 0; c < cgsFiles.length; ++c){
+			System.out.println("Parsing CGS File");
+			String workingFile = cgsFiles[c];
+			int [][] CGSFrames = new int[BFFrameMaker.getNumFrames(workingFile)][]; //CGS files contain frame order and delay for animation
+			BFFrameMaker.parseCSV(workingFile, CGSFrames);
+			
+			Picture2[] GifFrames = new Picture2[1]; 	//array for current working set of frames
+														//its length is the number of frames for that animation
+			
+			String type = BFStripAnimator.getType(workingFile, false);	//can be 1idle, 2move, 3atk, or original type like limit
+			
+			//make animation
+			if(CGSFrames.length != 0){
+				System.out.println("\n[Making [" + type + "] strip for " + unitID + "]");
+				GifFrames = new Picture2[CGSFrames.length];	//resize array to correct length of animation
+				
+				//make frames from sprite sheet
+				for(int i = 0; i < CGSFrames.length; ++i){
+					GifFrames[i] = makeFrame(unitID, sheets, CGGFrames, CGSFrames, i); 
+				}
+				
+				//crop and save frames 
+				makeNewFrame(GifFrames, unitID, CGSFrames, type);
+				
+				//make strip from frames
+				makeStrip(dirGif, dir, unitID, type, CGSFrames);
+			}else{
+				System.out.println("ERROR: File error with [" + workingFile + "]");
+			}
+			System.out.println("\n");
+		}
+	}//end makeAnimation
+	
 	// method to make a frame from a spritesheet and save it to the right
 	// directory
-	public static Picture2 makeFrame(String unitID, Picture2 sSheet, int[][] frames, int[][] csvFile, int counter) {
+	public static Picture2 makeFrame(String unitID, Picture2 sSheet[], int[][] frames, int[][] csvFile, int counter) {
 		int currentFrame = csvFile[counter][0];
 		int[] frame = frames[currentFrame];
 		int numParts = frame[1];
@@ -228,7 +274,7 @@ public class BFStripMaker {
 	}//end rotateImage
 	
 	// method to copy a current part from a spritesheet to a picture2 object
-	public static Picture2 copyPart(Picture2 sSheet, Picture2 part, int[] frame, int currentPart) {
+	public static Picture2 copyPart(Picture2 sSheets[], Picture2 part, int[] frame, int currentPart) {
 		//get data for current frame
 		int frameX = frame[2 + (currentPart * 11)];
 		int frameY = frame[3 + (currentPart * 11)];
@@ -240,7 +286,9 @@ public class BFStripMaker {
 		int spriteY = frame[9 + (currentPart * 11)];
 		int w = frame[10 + (currentPart * 11)];
 		int h = frame[11 + (currentPart * 11)];
+		int page_id = frame[12 + (currentPart * 11)];
 		
+		Picture2 sSheet = sSheets[page_id];	//get correct sheet to use
 		//opacity ranges from 0.0 to 1.0 since it's a multiplier
 		double opacity = opac / 100.0;
 

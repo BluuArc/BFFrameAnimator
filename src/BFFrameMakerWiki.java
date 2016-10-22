@@ -130,8 +130,15 @@ public class BFFrameMakerWiki {
 			
 			//get files
 			System.out.println("Getting CSV files and sprite sheet");
-			String[] cgsNames = BFFrameMaker.getFiles(workingDir, "idle_cgs", ".csv");				//wiki animations are only idle animations of units					
-			Picture2 sSheet = new Picture2(BFFrameMaker.getFile(workingDir, "anime", ".png"));		//sprite sheet contains image data
+			String[] cgsNames = BFFrameMaker.getFiles(workingDir, "idle_cgs", ".csv");				//wiki animations are only idle animations of units
+			String[] sheetNames = BFFrameMaker.getFiles(workingDir, "anime", ".png");
+			Picture2 sSheet[] = new Picture2[sheetNames.length];
+			if(sheetNames.length == 2 && BFFrameMaker.getFiles(workingDir, "_U.png", ".png").length == 1 && BFFrameMaker.getFiles(workingDir, "_L.png", ".png").length == 1){	//summoner unit
+				sSheet[0] = new Picture2(BFFrameMaker.getFile(workingDir, "_L.png", ".png"));
+				sSheet[1] = new Picture2(BFFrameMaker.getFile(workingDir, "_U.png", ".png"));
+			}else{ //default
+				for(int c = 0; c < sheetNames.length; ++c)	sSheet[c] = new Picture2(sheetNames[c]);
+			}
 			workingFile = BFFrameMaker.getFile(workingDir, "cgg", ".csv");
 			
 			//check if getting files succeeded
