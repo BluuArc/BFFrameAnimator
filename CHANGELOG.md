@@ -1,5 +1,25 @@
 # Working Change Log (To be put into release notes when ready)
 
+## TODO (will be moved to the change log section below as these are completed)
+* re-add-in wiki options in v2.0
+* check compatibility with summoner files in v2.0
+* remake (or re-add-in from previous version?) UI for program in v2.0
+* try to fix rotation issues on some units 
+* try to fix opacity issues on some units 
+* allow passing in of command line arguments
+* add check for yellow frames in GIF
+* make comments JDocs compatible
+
+## December 2, 2016 to v2.0 Release Date (TBA)
+* almost complete rewrite of entire program to better fit OOP principles
+* cleaner and more concise output during program execution
+* error messages are now output if any errors were encountered per unit
+ * add in file checking to ensure that all files needed are available
+* option to save each frame as a strip of individual parts from the sprite sheet
+* fixed bug where some shadows disappeard in the opacity options
+* addition of debug messages
+
+
 ## October 21, 2016
 * added numbers next to menu options to make last input clearer
 * there is now a method that takes in a CGG file, a CGS file, and the sprite sheet array (for modularity and for units that share files)

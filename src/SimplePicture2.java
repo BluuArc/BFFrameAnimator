@@ -181,9 +181,10 @@ public class SimplePicture2 implements DigitalPicture {
 				sourcePixel = sourcePicture.getPixel(sourceX, sourceY);
 				targetPixel = this.getPixel(targetX, targetY);
 				targetPixel.setColor(sourcePixel.getColor());
+				if(sourcePixel.getAlpha() > targetPixel.getAlpha())
+					targetPixel.setAlpha(sourcePixel.getAlpha());
 			}
 		}
-
 	}
 
 	/**
