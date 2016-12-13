@@ -19,6 +19,8 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;
 
 public class BFFrameMaker{
 	private static boolean debugOutput;
@@ -49,9 +51,9 @@ public class BFFrameMaker{
 		// System.out.println("Pick a directory for all GIFs");
 		// String gifDir = FileManagement.getDirectory(FileChooser.pickAFile());
 
-		// String[] listParsed = FileManagement.getLines(list);
+		// units = FileManagement.getLines(list);
 		
-		// for(String s : listParsed){
+		// for(String s : units){
 		// 	Unit unit = new Unit(s, gifDir, unitDir + "\\" + s);
 		// 	boolean opac = false;
 		// 	boolean saveParts = false;
@@ -92,7 +94,7 @@ public class BFFrameMaker{
 			System.exit(-1);
 		}
 		ProgramOutput.debug(debugOutput, "test: Creating unit");
-		Unit unit = new Unit("860238", unitDir, unitDir);
+		Unit unit = new Unit("740216", unitDir, unitDir);
 		try{
 			//unit = new Unit("50017", unitDir, unitDir);
 			ProgramOutput.debug(debugOutput, "test: Checking validity of unit");
@@ -103,13 +105,13 @@ public class BFFrameMaker{
 			}
 
 			boolean opac = false;
-			boolean saveParts = false;
+			saveParts = false;
 			boolean stripMode = false;
-			// makeUnitAnim(unit, opac, saveParts, stripMode);
+			makeUnitAnim(unit, opac, saveParts, stripMode);
 
 			opac = true;
 			// saveParts = true;
-			// stripMode = true;
+			stripMode = true;
 			makeUnitStrip(unit, opac, saveParts);
 			makeUnitAnim(unit, opac, saveParts, stripMode);
 
@@ -126,7 +128,7 @@ public class BFFrameMaker{
 	}
 
 	//common method used by makeUnitAnim and makeUnitStrip to initialize frames	
-	private void initializeFrames(Unit unit, int[][] cggParsed, String[] cgs, String animType, boolean useOpacity, boolean makeParts){
+	private void initializeFrames(Unit unit, int[][] cggParsed, String[] cgs, String animType, boolean useOpacity, boolean makeParts, boolean saveParts){
 		ProgramOutput.debug(debugOutput, "[entered initializeFrames]");
 		//parse cgs file
 
@@ -151,12 +153,19 @@ public class BFFrameMaker{
 		}
 
 		//create frames
+		if(frames != null){
+			for(int i = 0; i < frames.length; ++i){
+				frames[i] = null;
+			}
+			frames = null;
+		}
 		frames = new Frame[cgs.length];
 		Frame.resetDimensionsAndLP();
 		ProgramOutput.printProgress("Generating frames for " + animType + " of " + unit.getID() + ". Status: ",0, frames.length);
+		String opacType = (useOpacity) ? "opac" : "nopac";
 		for(int i = 0; i < frames.length; ++i){
 			// System.out.println("Frame " + cgsParsed[i][0]);
-			frames[i] = new Frame(cggParsed,cgsParsed,i,sSheets, useOpacity, makeParts);
+			frames[i] = new Frame(cggParsed,cgsParsed,i,sSheets,unit.getDirUnit() + "\\unit_" + unit.getID() + "_" + animType + "_" + opacType + "_F" + i, useOpacity, makeParts, saveParts);
 			ProgramOutput.printProgress(null,i+1, frames.length);
 		}
 		ProgramOutput.debug(debugOutput, "[left initializeFrames]");
@@ -189,7 +198,7 @@ public class BFFrameMaker{
 			String animType = getType(currCGS, true);
 			System.out.println("\n[" + unit.getID() + " - " + animType + " - GIF]");
 
-			initializeFrames(unit,cggParsed,cgs,animType,useOpacity, !stripMode);// don't make parts if using strip
+			initializeFrames(unit,cggParsed,cgs,animType,useOpacity, !stripMode, saveParts);// don't make parts if using strip
 
 			//save parts
 			String opacType = (useOpacity) ? "opac" : "nopac";
@@ -198,6 +207,11 @@ public class BFFrameMaker{
 				for(int i = 0; i < frames.length; ++i){
 					frames[i].saveParts(unit.getDirUnit() + "\\unit_" + unit.getID() + "_" + animType + "_" + opacType + "_F" + i + "_parts.png");
 					ProgramOutput.printProgress(null,i+1,frames.length);
+				}
+				
+				//delete parts since they aren't needed anymore
+				for(Frame f : frames){
+					f.deleteParts();
 				}
 			}
 
@@ -214,6 +228,7 @@ public class BFFrameMaker{
 				}
 			}
 			makeGif(unit, animType, opacType, stripPath);
+			
 		}//end for each cgs
 		ProgramOutput.debug(debugOutput, "[left makeUnitAnim]");
 	}
@@ -245,7 +260,7 @@ public class BFFrameMaker{
 			String animType = getType(currCGS, false);
 			System.out.println("\n[" + unit.getID() + " - " + animType + " - Strip]");
 
-			initializeFrames(unit,cggParsed,cgs,animType,useOpacity, true); //always create parts
+			initializeFrames(unit,cggParsed,cgs,animType,useOpacity, true, saveParts); //always create parts
 			
 			//save parts
 			String opacType = (useOpacity) ? "opac" : "nopac";
@@ -255,7 +270,13 @@ public class BFFrameMaker{
 					frames[i].saveParts(unit.getDirUnit() + "\\unit_" + unit.getID() + "_" + animType + "_" + opacType + "_F" + i + "_parts.png");
 					ProgramOutput.printProgress(null,i+1,frames.length);
 				}
+				
+				//delete parts since they aren't needed anymore
+				for(Frame f : frames){
+					f.deleteParts();
+				}
 			}
+			
 
 			makeStrip(unit, animType, opacType);
 		}
@@ -365,6 +386,7 @@ public class BFFrameMaker{
 	}
 
 	//method to make a GIF from images
+	@SuppressWarnings("static-access")
 	private String makeGif(Unit u, String animType, String animOption, String stripPath){
 		ProgramOutput.debug(debugOutput, "[entered makeGif]");
 		String gifName = u.getDirGif() + "\\unit_" + u.getID() + "_" 
@@ -393,8 +415,8 @@ public class BFFrameMaker{
 			try{
 				currentFrame = ImageIO.read(new File(frames[i].getFilename()));
 			}catch(IOException e){
-				System.out.println("Error in makeGif: Failed to access [" + currentFrame.toString() + "] for GIF");
-				u.addError("Error in makeGif: Failed to access [" + currentFrame.toString() + "] for GIF");
+				System.out.println("Error in makeGif: Failed to access [" + frames[i].getFilename() + "] for GIF");
+				u.addError("Error in makeGif: Failed to access [" + frames[i].getFilename() + "] for GIF");
 			}
 			g.setDelay(frames[i].getDelay());
 			g.addFrame(currentFrame);
@@ -402,16 +424,61 @@ public class BFFrameMaker{
 		}
 		g.finish();
 
-		//delete saved froames
+		//delete saved frames
 		ProgramOutput.printProgress("Deleting old frames. Status: ", 0, frames.length);
 		for(int i = 0; i < frames.length; ++i){
-			File currentFrame =	currentFrame = new File(frames[i].getFilename());
+			File currentFrame = new File(frames[i].getFilename());
 
 			if(currentFrame == null || !currentFrame.delete()){
 				System.out.println("Error in makeGif: Failed to delete [" + currentFrame.toString() + "]");
 				u.addError("Error in makeGif: Failed to delete [" + currentFrame.toString() + "]");
 			}
 			ProgramOutput.printProgress(null, i+1, frames.length);
+		}
+		
+		//check for yellow frames
+		//based off of: http://stackoverflow.com/questions/8933893/convert-each-animated-gif-frame-to-a-separate-bufferedimage/32119229#32119229
+		try {
+			//open gif for analyzing
+		    ImageReader reader = ImageIO.getImageReadersByFormatName("gif").next();
+		    File input = new File(gifName);
+		    ImageInputStream stream = ImageIO.createImageInputStream(input);
+		    reader.setInput(stream);
+
+		    int count = reader.getNumImages(true);
+		    int numImproperFrames = 0;
+		    ProgramOutput.printProgress("Checking " + FileManagement.getFilename(gifName) + " for improper frames. Status: ",0,count);
+		    //count the number of frames that aren't properly transparent in gif
+		    for (int index = 0; index < count; index++) {
+		        Picture2 currFrame = new Picture2(reader.read(index));
+		        int x = currFrame.getWidth() - 1;
+		        int y = currFrame.getHeight() - 1;
+		        int countImproper = 0;
+		        
+		        for(int i = 0; i <= 1; ++i){
+		        	for(int j = 0; j <= 1; ++j){
+		        		Pixel sourcePix = currFrame.getPixel(x*i, y*j);
+		        		//System.out.println("\nmakeGif: Comparing " + u.getTransparentColor().toString() + "(transparent color) to " + sourcePix.getColor().toString());
+		        		if(sourcePix.colorDistance(u.getTransparentColor()) < 10 && sourcePix.getAlpha() > 0){
+		        			//System.out.println("Match");
+		        			countImproper++;
+		        		}
+		        	}
+		        }
+		        //if(countImproper != 0) currFrame.write(FileManagement.getDirectory(gifName) + "\\" + animType + "-F" + index + ".png");
+		        
+		        if(countImproper == 4)
+		        	numImproperFrames++; //all 4 corners have transparent color
+		        
+		        ProgramOutput.printProgress(null,index+1,count);
+		    }
+		    if(numImproperFrames > 0){
+		    	u.addError("Warning in makeGif: There " + ((numImproperFrames > 1) ? "are " : "is ") + numImproperFrames + " improper " 
+		    			+ ((numImproperFrames > 1) ? "frames " : "frame ") + "present in " + FileManagement.getFilename(gifName));
+		    }
+		} catch (IOException ex) {
+		    System.out.println("Error in makeGif: cannot access " + gifName + " for error checking.");
+		    u.addError("Error in makeGif: cannot access " + gifName + " for error checking.");
 		}
 
 		ProgramOutput.debug(debugOutput, "[left makeGif]");
@@ -424,8 +491,8 @@ public class BFFrameMaker{
 		String stripName = u.getDirUnit() + "\\unit_" + getType(animType, false) + "_" 
 		+ u.getID() + "_" + animOption + ".png";
 
-		String frameName = u.getDirGif() + "\\unit_" + u.getID() + "_" 
-		+ animType + "-F";
+		//String frameName = u.getDirGif() + "\\unit_" + u.getID() + "_" 
+		//+ animType + "-F";
 
 		//add each frame to strip
 		int frameWidth = frames[0].getImage().getWidth();

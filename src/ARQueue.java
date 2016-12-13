@@ -7,8 +7,6 @@
  * 
  */
 
-import java.io.*;
-import java.util.*;
 
 public class ARQueue extends ARCommon{
 	//constructors

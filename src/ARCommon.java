@@ -7,8 +7,6 @@
  * 
  */
 
-import java.io.*;
-import java.util.*;
 
 public class ARCommon{
 	protected Object[] arr;

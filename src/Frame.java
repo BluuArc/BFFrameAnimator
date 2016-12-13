@@ -11,12 +11,14 @@
 
 import java.awt.Color;
 import java.awt.image.BufferedImage;
-import java.io.BufferedReader;
-import java.awt.Graphics2D;
-import java.awt.Image;
+import java.io.File;
+//import java.io.IOException;
+//import java.io.BufferedReader;
+//import java.awt.Graphics2D;
+//import java.awt.Image;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
-import javax.imageio.ImageIO;
+//import javax.imageio.ImageIO;
 import java.lang.ArrayIndexOutOfBoundsException;
 
 public class Frame{
@@ -25,8 +27,9 @@ public class Frame{
 
 	private int frameNumber;
 	private int delay;
-	private Part[] parts;
-	private Picture2 sheets[];
+	//private Part[] parts;
+	private Part[] parts; //array of filenames for parts
+	//private Picture2 sheets[];
 	private Picture2 image;
 	private String fileName;
 
@@ -42,9 +45,9 @@ public class Frame{
 		private int width;		//width of frame
 		private int height;		//height of frame
 		private int page_id;	//number of sprite sheet to use
-		private Picture2 partImage;	
+		private String partImageName;	
 
-		public Part(int[] csvLine, int currentPart){
+		public Part(int[] csvLine, int currentPart, String preName){
 			frameX = csvLine[2 + (currentPart * 11)];
 			frameY = csvLine[3 + (currentPart * 11)];
 			flip = csvLine[4 + (currentPart * 11)];
@@ -56,13 +59,15 @@ public class Frame{
 			width = csvLine[10 + (currentPart * 11)];
 			height = csvLine[11 + (currentPart * 11)];
 			page_id = csvLine[12 + (currentPart * 11)];
-			partImage = null;
+			partImageName = preName + "_part-" + currentPart + ".png";
 		}
 
+		@SuppressWarnings("unused")
 		public void createPartImage(Picture2 sSheets[], int finalFrameX, int finalFrameY, boolean useOpacity){
 			Picture2 sSheet = sSheets[page_id];
-			partImage = new Picture2(finalFrameX, finalFrameY);
-			Picture2 tempImage = null;
+			Picture2 tempImage = new Picture2(finalFrameX, finalFrameY);
+			Picture2 partImage = new Picture2(finalFrameX, finalFrameY);
+			tempImage.setAllPixelsToAnAlpha(0);
 			partImage.setAllPixelsToAnAlpha(0);
 
 			Pixel sourcePix,targetPix;
@@ -79,7 +84,7 @@ public class Frame{
 			for(y = 0; y < height; ++y){
 				for(x = 0; x < width; ++x){
 					sourcePix = sSheet.getPixel(spriteX + x, spriteY + y);
-					targetPix = partImage.getPixel(startX + x, startY + y);
+					targetPix = tempImage.getPixel(startX + x, startY + y);
 
 					//get source color values
 					int r, g, b, a;
@@ -98,26 +103,21 @@ public class Frame{
 					//set colors according to blend mode
 					if((blendMode == 1) && targetAlpha > 0){
 						//blend code based off of this: http://pastebin.com/vXc0yNRh
-						int pixval = (r + g + b) / 3;
+						
 						double multiplier = 1.0 + (targetAlpha/255.0);//1.0 + (pixval/255.0)
 						if(r+g+b < 50)	continue;
 						// r += pixval;
 						// g += pixval;
 						// b += pixval;
-						// r = (int)(r * multiplier);
-						// g = (int)(g * multiplier);
-						// b = (int)(b * multiplier);
+						r = (int)(r * multiplier);
+						g = (int)(g * multiplier);
+						b = (int)(b * multiplier);
+						int pixval = (r + g + b) / 3;
 						if(useOpacity){
 							targetAlpha = (int)(pixval * opacity);
-							// if(r+g+b < 150){
-							// 	targetAlpha = (int)(pixval * (1.0 - opacity));
-							// 	r = 255 - r;
-							// 	g = 255 - g;
-							// 	b = 255 - b;
-							// }
-							r = (int)(r * multiplier);
-							g = (int)(g * multiplier);
-							b = (int)(b * multiplier);
+							//r = (int)(r * multiplier);
+							//g = (int)(g * multiplier);
+							//b = (int)(b * multiplier);
 							
 							// if(r > 200 && g > 200 && b > 200 && opacity < 0.5){
 							// 	targetAlpha /= 2;
@@ -125,7 +125,8 @@ public class Frame{
 							// 	g /= 2;
 							// 	b /= 2;
 							// }
-						}
+						}else
+							targetAlpha = pixval;
 						
 						if(r > 255)	r = 255;
 						if(g > 255)	g = 255;
@@ -136,11 +137,11 @@ public class Frame{
 					targetPix.setAlpha(targetAlpha);
 				}
 			}//end for every pixel
-			// if(rotate != 0) partImage.write(FileChooser.getMediaDirectory() + "\\1stcopy.png");
+			//partImage.write(FileChooser.getMediaDirectory() + "\\1stcopy.png");
 
 			//apply rotation
 			if(rotate != 0){
-				partImage = rotateImage(rotate, partImage);
+				rotateImage(rotate, tempImage);
 				if(rotate == 90 || rotate == 270){
 					newWidth = height;
 					newHeight = width;
@@ -150,33 +151,33 @@ public class Frame{
 			}
 
 			//apply flips to image; 0 = no flip, 1 = flip horiz, 2 = flip vert, 3 = flip both
-			if(flip != 0 || flip != 3){
+			if(flip != 0){
 				//manipulating whole image, so we need a new copy
-				tempImage = new Picture2(partImage.getWidth(), partImage.getHeight());
+				//tempImage = new Picture2(partImage.getWidth(), partImage.getHeight());
 				for(y = 0; y < partImage.getHeight(); ++y){
 					for(x = 0; x < partImage.getWidth(); ++x){
 						// try{
 							//get source pixel at current position
-							sourcePix = partImage.getPixel(x, y);
+							sourcePix = tempImage.getPixel(x, y);
 							
 							//get target pixel position
 							int targetX = 0;
 							int targetY = 0;
 							
 							//horizontal flip
-							if (flip == 1)
+							if (flip == 1 || flip == 3)
 								targetX += (partImage.getWidth() - 1 - x);
 							else
 								targetX += x;
 
 							//vertical flip
-							if (flip == 2)
+							if (flip == 2 || flip == 3)
 								targetY += (partImage.getHeight() - 1 - y);
 							else
 								targetY += y;
 							
 							//copy pixels at flipped coordinates
-							targetPix = tempImage.getPixel(targetX, targetY);
+							targetPix = partImage.getPixel(targetX, targetY);
 							targetPix.setColor(sourcePix.getColor());
 							targetPix.setAlpha(sourcePix.getAlpha());
 						// }catch(ArrayIndexOutOfBoundsException e){
@@ -185,12 +186,14 @@ public class Frame{
 					}//end y
 				}//end x
 
-				//set partImage as new copy
-				partImage = tempImage;
-			}else if(flip == 3) //flip vertically and horizontally
-				partImage = rotateImage(180, partImage);
+				//copy it back
+				tempImage.setAllPixelsToAnAlpha(0);
+				tempImage.getGraphics().drawImage((BufferedImage) partImage.getImage(), 0, 0, null);
+			}//else if(flip == 3){ //flip vertically and horizontally
+			//	partImage = rotateImage(180, partImage);
+			//}
 
-			// if(flip != 0) partImage.write(FileChooser.getMediaDirectory() + "\\3flip.png");
+			//if(flip != 0) partImage.write(FileChooser.getMediaDirectory() + "\\3flip.png");
 
 			//prep variables for image shift
 			int partStartX = centerX + frameX; //coords of top left of frame on image
@@ -204,8 +207,7 @@ public class Frame{
 				startY += height/2 - width/2;				
 			}
 
-			tempImage = partImage;
-			partImage = new Picture2(partImage.getWidth(), partImage.getHeight());
+			partImage.setAllPixelsToAnAlpha(0);
 			//shift image over
 			for(y = 0; y < height; ++y){
 				for(x = 0; x < width; ++x){
@@ -224,10 +226,12 @@ public class Frame{
 					}
 				}
 			}
+			partImage.write(partImageName);
 			// if(flip != 0) partImage.write(FileChooser.getMediaDirectory() + "\\4shift.png");
 		}//end createPartImage
 
-		private Picture2 rotateImage(int angle, Picture2 input){
+		//rotate an image about it's center
+		private void rotateImage(int angle, Picture2 input){
 			//based off of http://stackoverflow.com/questions/8639567/java-rotating-images
 			//temporary copy of square image
 			int w = input.getWidth();
@@ -259,41 +263,31 @@ public class Frame{
 			newImage.getGraphics().drawImage(op.filter((BufferedImage) tempImage.getImage(), null), 0, 0, null);
 			// newImage.write(FileChooser.getMediaDirectory() + "\\2rotate-noshift.png");
 		
-			// Picture2 tempImage = new Picture2(op.filter((BufferedImage)input.getImage(), null));
-			// int minW = (tempImage.getWidth() < newImage.getWidth()) ? tempImage.getWidth() : newImage.getWidth();
-			// int minH = (tempImage.getHeight() < newImage.getHeight()) ? tempImage.getHeight() : newImage.getHeight();
-			// for(int y = 0; y < minH; ++y){
-			// 	for(int x = 0; x < minW; ++x){
-			// 		Pixel sourcePix = tempImage.getPixel(x,y);
-			// 		Pixel targetPix = newImage.getPixel(x,y);
-			// 		targetPix.setColor(sourcePix.getColor());
-			// 		targetPix.setAlpha(sourcePix.getAlpha());
-			// 	}
-			// }
-
 			//resize to original dimensions
-			tempImage = new Picture2(newImage);
-			newImage = new Picture2(w,h);
+			//tempImage = null;
+			//tempImage = newImage;
+			//newImage = new Picture2(w,h);
+			input.setAllPixelsToAnAlpha(0);
 			for(int y = 0; y < h; ++y){
 				for(int x = 0; x < w; ++x){
-					Pixel sourcePix = tempImage.getPixel(shiftX + x,shiftY + y);
-					Pixel targetPix = newImage.getPixel(x, y);
+					Pixel sourcePix = newImage.getPixel(shiftX + x,shiftY + y);
+					Pixel targetPix = input.getPixel(x, y);
 					targetPix.setColor(sourcePix.getColor());
 					targetPix.setAlpha(sourcePix.getAlpha());
 				}
 			}
 			// newImage.write(FileChooser.getMediaDirectory() + "\\2rotate-func.png");
 
-			return newImage;
+			//return newImage;
 		}//end rotateImage
 
-		public Picture2 getImage(){
-			return partImage;
+		public String getImage(){
+			return partImageName;
 		}
 	}
 
 	//constructor
-	public Frame(int[][] cgg, int[][] cgs, int lineNumber, Picture2 sSheets[], boolean useOpacity, boolean makeParts){
+	public Frame(int[][] cgg, int[][] cgs, int lineNumber, Picture2 sSheets[], String partPreName, boolean useOpacity, boolean makeParts, boolean saveParts){
 		frameNumber = cgs[lineNumber][0];	//get frame number from cgs on cgg
 		delay = (int)((cgs[lineNumber][3] / 60.0) * 1000);
 		int[] frameLine = cgg[frameNumber];	//cgg has info for that numbered frame
@@ -311,14 +305,18 @@ public class Frame{
 			//generate all the parts
 			for(int i = 0; i < parts.length; ++i){
 				// System.out.println("Part " + i);
-				parts[i] = new Part(frameLine, parts.length - 1 - i);
+				parts[i] = new Part(frameLine, parts.length - 1 - i, partPreName);
 				parts[i].createPartImage(sSheets,x,y,useOpacity);
 				// parts[i].getImage().write(FileChooser.getMediaDirectory() + "\\part" + i + ".png");
 			}
 
-			//copy all parts onto frame
 			for(Part p : parts){
-				copyTo(image, p.getImage(), y/2 - lowestPoint);
+				Picture2 partImage = new Picture2(p.getImage());
+				copyTo(image, partImage, y/2 - lowestPoint);
+			}
+			
+			if(!saveParts){
+				deleteParts();
 			}
 
 			//further resize
@@ -347,7 +345,7 @@ public class Frame{
 	public static void setMaxDimensionsAndLP(int[][] orderedFrames, int[][] cgg){
 		int maxX = 65;	//default maxX from 0 is 140, 65 from center
 		int maxY = 65; 	//default maxY from 0 is 140, 65 from center
-		boolean oddRotation = false;
+		//boolean oddRotation = false;
 		lowestPoint = -500;
 		//for each frame
 		for(int i = 0; i < orderedFrames.length; ++i){
@@ -360,7 +358,7 @@ public class Frame{
 				int currX = cgg[currFrame][2 + (j * 11)];
 				int currHeight = cgg[currFrame][11 + (j * 11)];
 				int currY = cgg[currFrame][3 + (j * 11)];
-				int rotateAngle = cgg[currFrame][7 + (j * 11)];
+				//int rotateAngle = cgg[currFrame][7 + (j * 11)];
 				// if(rotateAngle != 0 || rotateAngle != 180)	oddRotation = true;
 
 				// if(currWidth < 0) 	currWidth *= -1;
@@ -383,10 +381,10 @@ public class Frame{
 
 		//add extra for any odd rotations
 		//assume worse case rotation (90 or 270) of extra 50% of the height left and right
-		if(oddRotation){
-			maxX += 1.5*maxY;
-			lowestPoint += 1.5*lowestPoint;
-		}
+		//if(oddRotation){
+		//	maxX += 1.5*maxY;
+		//	lowestPoint += 1.5*lowestPoint;
+		//}
 
 		//round lowest point to next highest 10
 		int diff = lowestPoint % 10;
@@ -415,10 +413,12 @@ public class Frame{
 
 	//save parts in strip format
 	public void saveParts(String fName){
-		Picture2 strip = new Picture2(parts[0].getImage().getWidth()*parts.length, parts[0].getImage().getHeight());
-		int widthFrame = parts[0].getImage().getWidth();
-		int heightFrame = parts[0].getImage().getHeight();
+		Picture2 currentPart = new Picture2(parts[0].getImage());
+		Picture2 strip = new Picture2(currentPart.getWidth()*parts.length, currentPart.getHeight());
+		int widthFrame = currentPart.getWidth();
+		// int heightFrame = parts[0].getImage().getHeight();
 		for(int i = 0; i < parts.length; ++i){
+			currentPart = new Picture2(parts[i].getImage());
 			int startX = widthFrame * i;
 			// for(int y = 0; y < heightFrame; ++y){
 			// 	for(int x = 0; x < widthFrame; ++x){
@@ -429,9 +429,19 @@ public class Frame{
 			// 		targetPix.setAlpha(sourcePix.getAlpha());
 			// 	}
 			// }//end for each pixel
-			strip.getGraphics().drawImage((BufferedImage) parts[i].getImage().getImage(), startX, 0, null);
+			strip.getGraphics().drawImage((BufferedImage) currentPart.getImage(), startX, 0, null);
 		}//end for each part
 		strip.write(fName);
+	}
+	
+	public void deleteParts(){
+		for(int i = 0; i < parts.length; ++i){
+			File currentPart = new File(parts[i].getImage());
+			if(currentPart == null || !currentPart.delete()){
+				System.out.println("Error in makeGif: Failed to delete [" + parts[i].getImage() + "]");
+			}
+		}
+		
 	}
 
 	public void setFileName(String f){

@@ -4,10 +4,8 @@
 * re-add-in wiki options in v2.0
 * check compatibility with summoner files in v2.0
 * remake (or re-add-in from previous version?) UI for program in v2.0
-* try to fix rotation issues on some units 
-* try to fix opacity issues on some units 
+* try to fix rotation issues on some units  
 * allow passing in of command line arguments
-* add check for yellow frames in GIF
 * make comments JDocs compatible
 
 ## December 2, 2016 to v2.0 Release Date (TBA)
@@ -15,9 +13,13 @@
 * cleaner and more concise output during program execution
 * error messages are now output if any errors were encountered per unit
  * add in file checking to ensure that all files needed are available
-* option to save each frame as a strip of individual parts from the sprite sheet
-* fixed bug where some shadows disappeard in the opacity options
-* addition of debug messages
+* added option to save each frame as a strip of individual parts from the sprite sheet
+* fixed bug where some shadows disappeared in the opacity options
+* addition of debug messages and debug mode
+* add check for improper frames in GIF (i.e. frames that weren't properly made transparent)
+* opacity for units is improved
+* parts created during frame creation process are now temporarily saved as individual parts
+ * this increases the time needed to make longer animations, but this is necessary to reduce memory issues
 
 
 ## October 21, 2016
