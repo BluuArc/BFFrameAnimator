@@ -74,7 +74,7 @@ public class ARQueue extends ARCommon{
 		if(!isEmpty()){
 			int i;
 			for(i = top; i != bottom; ++i){
-				if(i > capacity)	i = 0;
+				if(i >= capacity)	i = 0;
 				out += arr[i] + separator;
 			}
 			out += arr[i];
@@ -84,5 +84,19 @@ public class ARQueue extends ARCommon{
 
 	public void printList(){
 		System.out.println(toString());
+	}
+	
+	public Object[] getList(){
+		if(isEmpty())	return null;
+		
+		Object[] newList = new Object[numElements];
+		
+		int i = 0;
+		for(int count = top; count < numElements; ++count){
+			if(i >= capacity) i = 0;
+			newList[count] = arr[i];
+		}
+		
+		return newList;
 	}
 }

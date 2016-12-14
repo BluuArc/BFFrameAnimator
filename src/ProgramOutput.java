@@ -1,7 +1,10 @@
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+
 /*
  *	Rewrite of BFFrameMaker project to better fit OOP principles.
  * 
- *	Class to handle the program output to the console.
+ *	Class to handle the program output to the console and log file.
  *
  *	Started 12/2/2016
  * 
@@ -10,10 +13,43 @@
 
 public class ProgramOutput{
 	public static String lastMessage;
+	private static PrintWriter log = null;
+	public static boolean debugMode = false;
+	public static boolean isLogging = false;
+	
+	public static void initLog(String filePath){
+		try {
+			log = new PrintWriter(filePath);
+			isLogging = true;
+		} catch (FileNotFoundException e) {
+			System.out.println("Error in ProgramOutput.initLog: can't create/access " + filePath);
+		}
+	}
+	
+	public static void logMessage(String s){
+		if(isLogging) log.println(s);
+	}
+	
+	public static void printLoggedMessage(boolean isDebugMessage, String s){
+		if(isLogging) log.println(s);
+		if(isDebugMessage)		ProgramOutput.debug(s);
+		else					System.out.println(s);
+	}
+	
+	public static void closeLog(){
+		if(isLogging) log.close();
+		isLogging = false;
+	}
+	
+	public static void setDebugMode(boolean b){
+		debugMode = b;
+		if(debugMode)	System.out.println("Debug mode is on.");
+		else			System.out.println("Debug mode is off.");
+	}
 
 	//add debug to beginning of a message
-	public static void debug(boolean debugOutput, String message){
-		if(debugOutput)
+	public static void debug(String message){
+		if(debugMode)
 			System.out.println("DEBUG: " + message);
 	}
 

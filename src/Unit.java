@@ -35,6 +35,7 @@ public class Unit {
 		cggFile = FileManagement.getSpecificFile(dirUnit, "cgg_" + unitID, ".csv");
 		cgsFiles = FileManagement.getSpecificFiles(dirUnit, "cgs_" + unitID, ".csv");
 		sSheets = FileManagement.getSpecificFiles(dirUnit, "anime_" + unitID, ".png");
+		ProgramOutput.logMessage(this.toString());
 	}
 
 	/* methods */
@@ -76,12 +77,37 @@ public class Unit {
 
 	public void printErrors(){
 		while(!errorList.isEmpty()){
-			System.out.println(errorList.dequeue());	
+			ProgramOutput.printLoggedMessage(false, (String) errorList.dequeue());	
 		}
 	}
 
 	public boolean noErrors(){
 		return errorList.isEmpty();
+	}
+	
+	public String toString(){
+		String output = unitID + ":\n";
+		output += "	dirUnit: " + dirUnit + "\n";
+		output += "	dirGif: " + dirGif + "\n";
+		if(cggFile != null)	output += " cgg: dirUnit\\" + FileManagement.getFilename(cggFile) + "\n";
+		else				output += "	cgg: null\n";
+		if(cgsFiles != null){
+			output += " cgs: dirUnit\\" + FileManagement.getFilename(cgsFiles[0]);
+			for(int i = 1; i < cgsFiles.length; ++i)
+				output += ",dirUnit\\" + FileManagement.getFilename(cgsFiles[i]);
+		}else{
+			output += "	cgs: null";
+		}
+
+		if(sSheets != null){
+			output += "\n	sSheets: dirUnit\\" + FileManagement.getFilename(sSheets[0]);
+			for(int i = 1; i < sSheets.length; ++i)
+				output += ",dirUnit\\" + FileManagement.getFilename(sSheets[i]);
+		}else{
+			output += "\n	sSheets: null";
+		}
+		output += "\n";
+		return output;
 	}
 
 }

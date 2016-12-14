@@ -136,7 +136,7 @@ public class FileChooser {
 		// pick the directory
 		dirName = pickPath(fileChooser);
 
-		return dirName + "/";
+		return dirName;
 	}
 
 	/**

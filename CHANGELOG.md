@@ -5,7 +5,6 @@
 * check compatibility with summoner files in v2.0
 * remake (or re-add-in from previous version?) UI for program in v2.0
 * try to fix rotation issues on some units  
-* allow passing in of command line arguments
 * make comments JDocs compatible
 
 ## December 2, 2016 to v2.0 Release Date (TBA)
@@ -20,6 +19,8 @@
 * opacity for units is improved
 * parts created during frame creation process are now temporarily saved as individual parts
  * this increases the time needed to make longer animations, but this is necessary to reduce memory issues
+* allow passing in of command line arguments (run JAR file with '-help' to see possible commands)
+* added a log file that contains information that is potentially useful for troubleshooting 
 
 
 ## October 21, 2016

@@ -36,7 +36,7 @@ public class FileManagement{
 		File[] listFiles = folder.listFiles();
 		
 		if(listFiles == null || listFiles.length == 0){
-			System.out.println("Error in FileManagement: Directory [" + dir + "] is empty or not found.");
+			System.out.println("Error in FileManagement.getFilesInPath: Directory [" + dir + "] is empty or not found.");
 			return null;
 		}
 		
@@ -52,7 +52,7 @@ public class FileManagement{
 				}
 			}//end for
 		}else{
-			System.out.println("Error in FileManagement: Directory [" + dir + "] has directories, but no files in the root folder.");
+			System.out.println("Error in FileManagement.getFilesInPath: Directory [" + dir + "] has directories, but no files in the root folder.");
 			return null;
 		}
 		
@@ -64,7 +64,7 @@ public class FileManagement{
 	public static String[] getSpecificFiles(String dir, String name, String extension){		
 		//check name and extension parameters
 		if(name.length() == 0 || extension.length() == 0){
-			System.out.println("Error in FileManagement: name and/or extension params cannot be empty");
+			System.out.println("Error in FileManagement.getSpecificFiles: name and/or extension params cannot be empty");
 			return null;
 		}
 		
@@ -73,10 +73,10 @@ public class FileManagement{
 		String[] temp = null;
 		
 		//check for empty directory
-		if(getFilesInPath(dir) != null || list.length != 0)
+		if(getFilesInPath(dir) != null && list.length != 0)
 			temp = new String[list.length];
 		else{
-			System.out.println("Error in FileManagement: No files found");
+			System.out.println("Error in FileManagement.getSpecificFiles: No files found");
 			return null;
 		}
 
@@ -93,7 +93,7 @@ public class FileManagement{
 		
 		//check if any file was found
 		if(count == 0){
-			System.out.println("Error in FileManagement: Files with name [" + name + "] and extension [" + extension +  "] not found in [" + dir + "]");
+			System.out.println("Error in FileManagement.getSpecificFiles: Files with name [" + name + "] and extension [" + extension +  "] not found in [" + dir + "]");
 		}else{
 			//copy temp array into resized output array
 			output = new String[count];
@@ -148,16 +148,16 @@ public class FileManagement{
 				numLines++;
 			} // end while
 		} catch (FileNotFoundException e) {
-			System.out.println("Error in FileManagement: File [" + file + "] not found");
+			System.out.println("Error in FileManagement.getNumLines: File [" + file + "] not found");
 		} catch (IOException e) {
-			System.out.println("Error in FileManagement: IO Exception when opening/reading file [" + file + "]");
+			System.out.println("Error in FileManagement.getNumLines: IO Exception when opening/reading file [" + file + "]");
 		} finally {
 			//close file
 			if (br != null) {
 				try {
 					br.close();
 				} catch (IOException e) {
-					System.out.println("Error in FileManagement: IO Exception when closing file [" + file + "]");
+					System.out.println("Error in FileManagement.getNumLines: IO Exception when closing file [" + file + "]");
 				} // end catch
 			} // end try
 		} // end finally
@@ -181,15 +181,15 @@ public class FileManagement{
 				output[i++] = line;
 			} // end while
 		} catch (FileNotFoundException e) {
-			System.out.println("Error in FileManagement: File [" + file + "] not found");
+			System.out.println("Error in FileManagement.getLines: File [" + file + "] not found");
 		} catch (IOException e) {
-			System.out.println("Error in FileManagement: IO Exception when opening/reading file [" + file + "]");
+			System.out.println("Error in FileManagement.getLines: IO Exception when opening/reading file [" + file + "]");
 		} finally {
 			if (br != null) {
 				try {
 					br.close();
 				} catch (IOException e) {
-					System.out.println("Error in FileManagement: IO Exception when closing file [" + file + "]");
+					System.out.println("Error in FileManagement.getLines: IO Exception when closing file [" + file + "]");
 				} // end catch
 			} // end try
 		} // end finally

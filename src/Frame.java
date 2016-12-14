@@ -125,8 +125,8 @@ public class Frame{
 							// 	g /= 2;
 							// 	b /= 2;
 							// }
-						}else
-							targetAlpha = pixval;
+						}//else
+							//targetAlpha = pixval;
 						
 						if(r > 255)	r = 255;
 						if(g > 255)	g = 255;
@@ -227,6 +227,7 @@ public class Frame{
 				}
 			}
 			partImage.write(partImageName);
+			ProgramOutput.logMessage("Frame$Part.createPartImage: created " + partImageName);
 			// if(flip != 0) partImage.write(FileChooser.getMediaDirectory() + "\\4shift.png");
 		}//end createPartImage
 
@@ -292,7 +293,7 @@ public class Frame{
 		delay = (int)((cgs[lineNumber][3] / 60.0) * 1000);
 		int[] frameLine = cgg[frameNumber];	//cgg has info for that numbered frame
 		parts = new Part[frameLine[1]];		//initialize array of parts
-		fileName = FileChooser.getMediaDirectory() + "\\test.png";
+		fileName = FileChooser.getMediaDirectory() + "\\test.png"; //can't use prename since frames will be saved in gif directory
 
 		//create empty frame image
 		if(makeParts){
@@ -409,6 +410,7 @@ public class Frame{
 	//save the image; used for debugging
 	public void save(){
 		image.write(fileName);
+		ProgramOutput.logMessage("Frame.save: created " + fileName);
 	}
 
 	//save parts in strip format
@@ -438,7 +440,9 @@ public class Frame{
 		for(int i = 0; i < parts.length; ++i){
 			File currentPart = new File(parts[i].getImage());
 			if(currentPart == null || !currentPart.delete()){
-				System.out.println("Error in makeGif: Failed to delete [" + parts[i].getImage() + "]");
+				ProgramOutput.printLoggedMessage(false, "Error in Frame.deleteParts: Failed to delete [" + parts[i].getImage() + "]");
+			}else{
+				ProgramOutput.logMessage("Frame.deleteParts: deleted " + parts[i].getImage());
 			}
 		}
 		

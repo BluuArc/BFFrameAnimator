@@ -36,5 +36,9 @@ public class ARCommon{
 	public boolean isEmpty(){
 		return (numElements == 0);
 	}
+	
+	public int getNumElements(){
+		return numElements;
+	}
 
 }
