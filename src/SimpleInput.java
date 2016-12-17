@@ -213,11 +213,11 @@ public class SimpleInput {
 	 * 
 	 * @param message
 	 *            the message to display to the user
-	 * @return a value of 0 for No and 1 for Yes
+	 * @return a value of 0/false for No and 1/true for Yes
 	 */
-	public static int getYesNoOption(String message) {
+	public static boolean getYesNoOption(String message) {
 		String[] options = {"No", "Yes"};
-		return getButtonOption(message,options);
+		return getButtonOption(message,options) == 1;
 	}
 
 } // end of SimpleInput class

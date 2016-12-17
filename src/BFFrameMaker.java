@@ -27,27 +27,30 @@ import javax.imageio.stream.ImageInputStream;
 
 public class BFFrameMaker{
 	private boolean useGUI;
+	private String listPath;
 	private String[] unitNums;
 	private Frame[] frames;
 	private CreationOptions options;
 	
 	private class CreationOptions{
-		private boolean useOpacity;
-		private boolean saveParts;
-		private boolean stripMode;
-		private boolean makeStrip;
+		private boolean useOpacity;	//use opacity
+		private boolean saveParts;	//save parts
+		private boolean stripMode;	//use animation strip
+		private boolean makeStrip;	//create animation strip
+		private boolean wikiMode;	//create with height of 140px minimum
 		private String gifDir;		//dir of all gifs
 		private String unitDir; 	//dir of all units
 	
 		public CreationOptions(){
-			this(false, false, false, false, null, null);
+			this(false, false, false, false, false, null, null);
 		}
 	
-		public CreationOptions(boolean opac, boolean parts, boolean stripMo, boolean makeSt, String gDir, String uDir){
+		public CreationOptions(boolean opac, boolean parts, boolean stripMo, boolean makeSt, boolean wikiMo, String gDir, String uDir){
 			useOpacity = opac;
 			saveParts = parts;
 			stripMode = stripMo;
 			makeStrip = makeSt;
+			wikiMode = wikiMo;
 			
 			gifDir = gDir;
 			unitDir = uDir;
@@ -90,7 +93,8 @@ public class BFFrameMaker{
 			output += (useOpacity) ? "useOpacity," : "!useOpacity,";
 			output += (saveParts) ? "saveParts," : "!saveParts,";
 			output += (stripMode) ? "stripMode," : "!stripMode,";
-			output += (makeStrip) ? "makeStrip" : "!makeStrip";
+			output += (makeStrip) ? "makeStrip," : "!makeStrip,";
+			output += (wikiMode) ? "wikiMode" : "!wikiMode";
 			output += "]";
 			return output;
 		}
@@ -99,7 +103,7 @@ public class BFFrameMaker{
 			if(d != null){
 				gifDir = d;
 			}else{
-				System.out.println("Choose directory for all GIFs.");
+				System.out.println("Choose the destination directory for all GIFs.");
 				gifDir = FileChooser.pickADirectory();
 			}
 			//System.out.println(gifDir);
@@ -124,14 +128,27 @@ public class BFFrameMaker{
 		}
 		
 		public void setDirs(){
-			try{
 				setGifDir(gifDir);
+				if(gifDir == null){
+					ProgramOutput.printLoggedMessage(false, "Error in BFFrameMaker.setDirs: gifDir is null. Exiting.");
+					ProgramOutput.closeLog();
+					System.exit(-1);
+				}
+				
 				setUnitDir(unitDir);
-			}catch(NullPointerException e){
-				ProgramOutput.printLoggedMessage(false, "Error in setDirs: NullPointerException encountered. Exiting.");
-				ProgramOutput.closeLog();
-				System.exit(-1);
-			}
+				if(unitDir == null){
+					ProgramOutput.printLoggedMessage(false, "Error in BFFrameMaker.setDirs: unitDir is null. Exiting.");
+					ProgramOutput.closeLog();
+					System.exit(-1);
+				}
+		}
+		
+		public void setWikiMode(boolean b){
+			wikiMode = b;
+		}
+
+		public boolean isWikiMode() {
+			return wikiMode;
 		}
 	}
 
@@ -148,35 +165,58 @@ public class BFFrameMaker{
 		BFFrameMaker program = new BFFrameMaker();
 		program.processCommands(args);
 		//program.test();
+		boolean done = true; //set for 1 menu loop minimum
 
 		//ask for input (via dialog?)
-		String list = "";
+		String list = program.getListPath();
 		if(program.getNumUnits() == 0){
 			try{
-				System.out.println("Choose list.txt that contains list of IDs.");
+				System.out.println("Choose list.txt that contains a list of IDs to process.");
 				list = FileChooser.pickAFile();
 				program.setUnitsList(list);
 			}catch(NullPointerException e){
-				System.out.println("Error in main: no valid input for list. Exiting.");
+				System.out.println("Error in BFFrameMaker.main: no valid input for list. Exiting.");
+				ProgramOutput.logException(e);
 				System.exit(-1);
 			}
 		}
 		
 		ProgramOutput.initLog(program.getGifDir() + "\\BFFA-log.txt");
+		ProgramOutput.debug("Log path: " + program.getGifDir() + "\\BFFA-log.txt");
 
-		
 		ProgramOutput.logMessage("gifDir: " + program.getGifDir());
 		ProgramOutput.logMessage("unitDir: " + program.getUnitDir());
 		ProgramOutput.logMessage("list: " + list + "\n");
 		
-		
-		if(program.getGuiBool() == true){
-			//UI to set various options for CreationOptions
-		}
-
-		program.processUnits();
+		do{
+			if(program.getGuiBool() == true)
+				program.setAnimOptions();
+	
+			program.processUnits();
+			
+			if(program.getGuiBool() == true)
+				done = !(SimpleInput.getYesNoOption("Would you like to generate another set of images and/or GIFs?"));
+		}while(!done);
 		ProgramOutput.closeLog();
+		ProgramOutput.debug("Log path: " + program.getGifDir() + "\\BFFA-log.txt");
 		System.exit(0);
+	}
+	
+	public void setAnimOptions(){
+		boolean done = false;
+		ProgramOutput.printLoggedMessage(true, "Old options: " + options.toBooleanString());
+		while(!done){
+			options.setMakeStrip(SimpleInput.getYesNoOption("Would you like to create animation strips?\n(Select No to create GIFs instead)"));
+			if(!options.doMakeStrip()){
+				options.setWikiMode(SimpleInput.getYesNoOption("Would you like to create wiki GIFs?"));
+				options.setStripMode(SimpleInput.getYesNoOption("Would you like to use already made strips in your animations?"));
+			}
+			if(!options.isStripMode()) 	options.setOpacity(SimpleInput.getYesNoOption("Would you like to use opacity?"));
+			else						options.setOpacity(SimpleInput.getYesNoOption("Do your strips use opacity?"));
+			if(!options.isStripMode())	options.setPartMode(SimpleInput.getYesNoOption("Would you like to save each frame as a part?")); //can't save individual parts from already made strips
+			done = SimpleInput.getYesNoOption("Your options are currently set to be " + options.toBooleanString() + "\nAre you sure you want to continue?");
+		}
+		ProgramOutput.printLoggedMessage(true, "New options: " + options.toBooleanString());
 	}
 	
 	public String getGifDir(){
@@ -185,6 +225,10 @@ public class BFFrameMaker{
 	
 	public String getUnitDir(){
 		return (options.getUnitDir());
+	}
+	
+	public String getListPath(){
+		return listPath;
 	}
 	
 	//used for debugging and development
@@ -196,6 +240,7 @@ public class BFFrameMaker{
 			// System.out.println(unitDir);
 		}catch(NullPointerException e){
 			System.out.println("Null input. Exiting.");
+			ProgramOutput.logException(e);
 			ProgramOutput.closeLog();
 			System.exit(-1);
 		}
@@ -204,7 +249,7 @@ public class BFFrameMaker{
 		//create new unit and options
 		processCommands(null);
 		String unitID = "11016";
-		Unit unit = new Unit(unitID, options.getGifDir(), options.getUnitDir() + "\\" + unitID);
+		Unit unit = new Unit(unitID, options.getGifDir(), options.getUnitDir() + "\\" + unitID, false);
 		
 		options.setOpacity(false);
 		options.setPartMode(false);
@@ -242,28 +287,33 @@ public class BFFrameMaker{
 				if(args[i].equals("-useStrip"))		o.setStripMode(true);
 				if(args[i].equals("-useOpacity"))	o.setOpacity(true);
 				if(args[i].equals("-saveParts"))	o.setPartMode(true);
-				if(args[i].equals("-list"))			setUnitsList(args[++i]);
 				if(args[i].equals("-noGui"))		useGUI = false;
 				if(args[i].equals("-debug"))		ProgramOutput.setDebugMode(true);
+				if(args[i].equals("-list")){
+					listPath = args[++i];
+					setUnitsList(listPath);
+				}
 				if(args[i].equals("-help")){
 					String options = "";
 					options += "Possible commandline options:\n";
-					options += "-debug			output debug messages in output\n";
+					options += "-debug		output debug messages to console\n";
 					options += "-unitDir <dir>	set the parent directory for all units\n";
 					options += "-gifDir <dir>	set the destination directory for all GIFs\n";
-					options += "-makeStrip		flag to create a strip of frames instead of a GIF\n";
-					options += "-useStrip		flag to use already made strips in the units folders\n";
-					options += "-useOpacity		flag to use opacity creating directly from the spritesheet\n";
-					options += "-saveParts		option to save each frame as a strip of parts in the units folders\n";
-					options += "-list			file path to a text file containing a list of units\n";
-					options += "-noGui			flag to not use any GUI to set creation options\n";
-					options += "-help			show this message\n";
+					options += "-makeStrip	flag to create a strip of frames instead of a GIF per unit\n";
+					options += "-useStrip	flag to use already made strips in the units folders\n";
+					options += "-useOpacity	flag to use opacity creating directly from the spritesheet\n";
+					options += "-saveParts	option to save each frame as a strip of parts in the units folders\n";
+					options += "-list		file path to a text file containing a list of units\n";
+					options += "-noGui		flag to not use any GUI to set creation options\n";
+					options += "-noGui(cont'd)	Note: if this flag is set, no GUI will be used assuming all other options are preset via command line arguments.\n"; 
+					options += "-help		show this message\n";
 					System.out.println(options);
 					System.exit(0);
 				}
 			}
 		}catch(ArrayIndexOutOfBoundsException e){
-			System.out.println("Error in processCommands: missing parameter for " + args[i-1]);
+			System.out.println("Error in BFFrameMaker.processCommands: missing parameter for " + args[i-1]);
+			ProgramOutput.logException(e);
 		}
 		
 		o.setDirs(); //set directories if they aren't set yet
@@ -296,10 +346,11 @@ public class BFFrameMaker{
 		Unit[] arr = new Unit[unitNums.length];
 		try{
 			for(int i = 0; i < unitNums.length; ++i){
-				arr[i] = new Unit(unitNums[i], options.getGifDir(), options.getUnitDir() + "\\" + unitNums[i]);
+				arr[i] = new Unit(unitNums[i], options.getGifDir(), options.getUnitDir() + "\\" + unitNums[i], options.isWikiMode());
 			}
 		}catch(NullPointerException e){
-			ProgramOutput.printLoggedMessage(false, "Error in createUnitsArray: NullPointerException encountered. Exiting.");
+			ProgramOutput.printLoggedMessage(false, "Error in BFFrameMaker.createUnitsArray: NullPointerException encountered. Exiting.");
+			ProgramOutput.logException(e);
 			ProgramOutput.closeLog();
 			System.exit(-1);
 		}
@@ -310,7 +361,7 @@ public class BFFrameMaker{
 	public void processUnits(){
 		ProgramOutput.printLoggedMessage(true, "[entered processUnits]");
 		if(getNumUnits() == 0){
-			ProgramOutput.printLoggedMessage(false, "Error in processUnits: List is empty.");
+			ProgramOutput.printLoggedMessage(false, "Error in BFFrameMaker.processUnits: List is empty.");
 			ProgramOutput.printLoggedMessage(true, "[left processUnits]");
 			return;
 		}
@@ -334,6 +385,7 @@ public class BFFrameMaker{
 			}
 		}
 		if(!error) ProgramOutput.printLoggedMessage(false, "None.");
+		ProgramOutput.printLoggedMessage(false, "\n");
 		ProgramOutput.printLoggedMessage(true, "[left processUnits]");
 	}
 	
@@ -345,22 +397,24 @@ public class BFFrameMaker{
 	//process an individual unit based on the options
 	public void processUnit(Unit unit, CreationOptions o){
 		ProgramOutput.printLoggedMessage(true, "[entered processUnit]");
+		ProgramOutput.printLoggedMessage(true, "Current options are " + o.toBooleanString());
 		try{
 			ProgramOutput.printLoggedMessage(true, "processUnit: Checking validity of " + unit.getID());
 			if(!unit.isValidUnit()){
-				ProgramOutput.printLoggedMessage(false, "Error in processUnit: missing files for " + unit.getID());
-				unit.addError("Error in processUnit: missing files for " + unit.getID());
+				ProgramOutput.printLoggedMessage(false, "Error in BFFrameMaker.processUnit: missing files for " + unit.getID());
+				unit.addError("Error in BFFrameMaker.processUnit: missing files for " + unit.getID());
 				// System.exit(-1);
 			}
 
 			if(o.doMakeStrip()){//make a strip
 				makeUnitStrip(unit, o.isOpac(), o.doSaveParts());
 			}else{//make a gif
-				makeUnitAnim(unit, o.isOpac(), o.doSaveParts(), o.isStripMode());
+				makeUnitAnim(unit, o.isOpac(), o.doSaveParts(), o.isStripMode(), o.isWikiMode());
 			}
 			
 		}catch(NullPointerException e){
 			ProgramOutput.printLoggedMessage(false, "NullPointerException encountered in animation process");
+			ProgramOutput.logException(e);
 			unit.addError("NullPointerException encountered in animation process");
 		}
 		if(!unit.noErrors()){
@@ -413,7 +467,7 @@ public class BFFrameMaker{
 	}
 
 	//animate from spritesheet or a strip
-	public void makeUnitAnim(Unit unit, boolean useOpacity, boolean saveParts, boolean stripMode){
+	public void makeUnitAnim(Unit unit, boolean useOpacity, boolean saveParts, boolean stripMode, boolean wikiMode){
 		ProgramOutput.printLoggedMessage(true, "[entered makeUnitAnim]");
 		String[] cgg = FileManagement.getLines(unit.getCGG());
 		if(cgg == null){
@@ -459,16 +513,17 @@ public class BFFrameMaker{
 			//generate GIF based on stripMode variable
 			String stripPath = null;
 			if(stripMode){ // look for strip
-				ProgramOutput.printLoggedMessage(true, "makeUnitAnim: checking for stripPath");
+				ProgramOutput.printLoggedMessage(true, "makeUnitAnim: looking for strip in the format of [unit_" + getType(animType,false) + "_" 
+					+ unit.getID() + "_" + opacType + ".png]");
 				stripPath = FileManagement.getSpecificFile(unit.getDirUnit(), "unit_" + getType(animType,false) + "_" 
 					+ unit.getID() + "_" + opacType, ".png");
 				if(stripPath == null){ // no strip, note error and continue to next unit
-					unit.addError("missing " + "unit_" + getType(animType,false) + "_" 
+					unit.addError("Error in BFFrameMaker.makeUnitAnim: missing " + "unit_" + getType(animType,false) + "_" 
 					+ unit.getID() + "_" + opacType + ".png");
 					continue;
 				}
 			}
-			makeGif(unit, animType, opacType, stripPath);
+			makeGif(unit, wikiMode, animType, opacType, stripPath);
 			
 		}//end for each cgs
 		ProgramOutput.printLoggedMessage(true, "[left makeUnitAnim]");
@@ -568,27 +623,47 @@ public class BFFrameMaker{
 		return type;
 	}
 
-	private void makeAnimFrames(String preName, Color transparentColor, String stripPath){
+	private void makeAnimFrames(Unit u, String preName, Color transparentColor, String stripPath, boolean wikiMode){
 		ProgramOutput.printLoggedMessage(true, "[entered makeAnimFrames]");
 		Picture2 origFrame, animFrame;
 		int limitingAlpha = 100;
+		int startYSource = 0;
+		int startYTarget = 0;
 		if(stripPath == null){
 			ProgramOutput.printLoggedMessage(true, "makeAnimFrames: using frames for generation");
+			
+			int height = frames[0].getImage().getHeight();
+			if(wikiMode){
+				int[] points = Frame.getLowestHighestFramePoints(frames);
+				int newHeight = points[1] - points[0]; //get "true" height
+				if(newHeight < 140){
+					startYTarget = 140 - newHeight - 1;
+					newHeight = 140;	//minimum height is 140 px
+				}
+				else				u.addError("Warning in makeAnimFrames: newHeight is " + newHeight);
+				startYSource = points[0];
+				height = newHeight;
+			}
+			
 			ProgramOutput.printProgress("Saving frames for GIF creation. Status: ", 0, frames.length);
 			for(int i = 0; i < frames.length; ++i){
 				origFrame = frames[i].getImage();
 
 				//copy frame onto new picture object with transparent color background
-				animFrame = new Picture2(origFrame.getWidth(), origFrame.getHeight());
+				animFrame = new Picture2(origFrame.getWidth(), height);
 				animFrame.setAllPixelsToAColor(transparentColor);
 				animFrame.setAllPixelsToAnAlpha(255);
-				for(int y = 0; y < animFrame.getHeight(); ++y){
+				for(int y = 0; y < height; ++y){
 					for(int x = 0; x < animFrame.getWidth(); ++x){
-						Pixel sourcePix = origFrame.getPixel(x,y);
-						Pixel targetPix = animFrame.getPixel(x,y);
-						if(sourcePix.getAlpha() > limitingAlpha){	
-							targetPix.setColor(sourcePix.getColor());
-							targetPix.setAlpha(sourcePix.getAlpha());
+						try{
+							Pixel sourcePix = origFrame.getPixel(x,startYSource + y);
+							Pixel targetPix = animFrame.getPixel(x,startYTarget + y);
+							if(sourcePix.getAlpha() > limitingAlpha){	
+								targetPix.setColor(sourcePix.getColor());
+								targetPix.setAlpha(sourcePix.getAlpha());
+							}
+						}catch(ArrayIndexOutOfBoundsException e){
+							continue;
 						}
 					}
 				}//end for every pixel
@@ -604,6 +679,18 @@ public class BFFrameMaker{
 			origFrame = new Picture2(stripPath);
 			int frameWidth = origFrame.getWidth() / frames.length;
 			int frameHeight = origFrame.getHeight();
+			if(wikiMode){
+				int[] points = Frame.getLowestHighestFramePoints(origFrame);
+				int newHeight = points[1] - points[0]; //get "true" height
+				if(newHeight < 140){
+					startYTarget = 140 - newHeight - 1;
+					newHeight = 140;	//minimum height is 140 px
+				}
+				else				u.addError("Warning in makeAnimFrames: newHeight is " + newHeight);
+				startYSource = points[0];
+				frameHeight = newHeight;
+			}
+			
 			//copy each part of strip into separate frames
 			ProgramOutput.printProgress("Separating frames from strip for GIF creation. Status: ", 0, frames.length);
 			for(int i = 0; i < frames.length; ++i){
@@ -612,11 +699,15 @@ public class BFFrameMaker{
 				animFrame.setAllPixelsToAnAlpha(255);
 				for(int y = 0; y < frameHeight; ++y){
 					for(int x = 0; x < frameWidth; ++x){
-						Pixel sourcePix = origFrame.getPixel(frameWidth * i + x,y);
-						Pixel targetPix = animFrame.getPixel(x,y);
-						if(sourcePix.getAlpha() > limitingAlpha){	
-							targetPix.setColor(sourcePix.getColor());
-							targetPix.setAlpha(sourcePix.getAlpha());
+						try{
+							Pixel sourcePix = origFrame.getPixel(frameWidth * i + x,startYSource + y);
+							Pixel targetPix = animFrame.getPixel(x,startYTarget + y);
+							if(sourcePix.getAlpha() > limitingAlpha){	
+								targetPix.setColor(sourcePix.getColor());
+								targetPix.setAlpha(sourcePix.getAlpha());
+							}
+						}catch(ArrayIndexOutOfBoundsException e){
+							continue;
 						}
 					}
 				}//end for every pixel
@@ -634,10 +725,11 @@ public class BFFrameMaker{
 
 	//method to make a GIF from images
 	@SuppressWarnings("static-access")
-	private String makeGif(Unit u, String animType, String animOption, String stripPath){
+	private String makeGif(Unit u, boolean wikiMode, String animType, String animOption, String stripPath){
 		ProgramOutput.printLoggedMessage(true, "[entered makeGif]");
-		String gifName = u.getDirGif() + "\\unit_" + u.getID() + "_" 
-		+ animType + "_" + animOption;
+		String gifName = u.getDirGif();
+		if(!wikiMode)	gifName += "\\unit_" + u.getID() + "_" + animType + "_" + animOption;
+		else			gifName += "\\unit_ills_anime_" + u.getID() + "_" + animOption;
 		if(stripPath != null)	gifName += "_strip";
 		gifName += ".gif";
 
@@ -645,7 +737,7 @@ public class BFFrameMaker{
 		+ animType + "-F";
 
 		//save all frames with transparent background
-		makeAnimFrames(frameName, u.getTransparentColor(), stripPath);
+		makeAnimFrames(u, frameName, u.getTransparentColor(), stripPath, wikiMode);
 
 		//create gif from saved frames
 		AnimatedGifEncoder g = new AnimatedGifEncoder();
@@ -661,8 +753,9 @@ public class BFFrameMaker{
 			try{
 				currentFrame = ImageIO.read(new File(frames[i].getFilename()));
 			}catch(IOException e){
-				ProgramOutput.printLoggedMessage(false, "Error in makeGif: Failed to access [" + frames[i].getFilename() + "] for GIF");
-				u.addError("Error in makeGif: Failed to access [" + frames[i].getFilename() + "] for GIF");
+				ProgramOutput.printLoggedMessage(false, "Error in BFFrameMaker.makeGif: Failed to access [" + frames[i].getFilename() + "] for GIF");
+				ProgramOutput.logException(e);
+				u.addError("Error in BFFrameMaker.makeGif: Failed to access [" + frames[i].getFilename() + "] for GIF");
 			}
 			g.setDelay(frames[i].getDelay());
 			g.addFrame(currentFrame);
@@ -677,8 +770,8 @@ public class BFFrameMaker{
 			File currentFrame = new File(frames[i].getFilename());
 
 			if(currentFrame == null || !currentFrame.delete()){
-				ProgramOutput.printLoggedMessage(false, "Error in makeGif: Failed to delete [" + currentFrame.toString() + "]");
-				u.addError("Error in makeGif: Failed to delete [" + currentFrame.toString() + "]");
+				ProgramOutput.printLoggedMessage(false, "Error in BFFrameMaker.makeGif: Failed to delete [" + currentFrame.toString() + "]");
+				u.addError("Error in BFFrameMaker.makeGif: Failed to delete [" + currentFrame.toString() + "]");
 			}else{
 				ProgramOutput.logMessage("makeGif: deleted " + frames[i].getFilename());
 			}
@@ -723,9 +816,10 @@ public class BFFrameMaker{
 		    	u.addError("Warning in makeGif: There " + ((numImproperFrames > 1) ? "are " : "is ") + numImproperFrames + " improper " 
 		    			+ ((numImproperFrames > 1) ? "frames " : "frame ") + "present in " + FileManagement.getFilename(gifName));
 		    }
-		} catch (IOException ex) {
-			ProgramOutput.printLoggedMessage(false, "Error in makeGif: cannot access " + gifName + " for error checking.");
-		    u.addError("Error in makeGif: cannot access " + gifName + " for error checking.");
+		} catch (IOException e) {
+			ProgramOutput.printLoggedMessage(false, "Error in BFFrameMaker.makeGif: cannot access " + gifName + " for error checking.");
+			ProgramOutput.logException(e);
+		    u.addError("Error in BFFrameMaker.makeGif: cannot access " + gifName + " for error checking.");
 		}
 
 		ProgramOutput.printLoggedMessage(true, "[left makeGif]");

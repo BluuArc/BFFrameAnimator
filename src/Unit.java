@@ -25,16 +25,28 @@ public class Unit {
 	private ARQueue errorList;
 
 	/* constructors */
-	public Unit(String id, String gifDir, String unitDir){
+	public Unit(String id, String gifDir, String unitDir, boolean wikiMode){
 		transparentColor = new Color(253, 237, 43);
 		dirGif = gifDir;
 		
 		errorList = new ARQueue();
 		unitID = id;
 		dirUnit = unitDir;
-		cggFile = FileManagement.getSpecificFile(dirUnit, "cgg_" + unitID, ".csv");
-		cgsFiles = FileManagement.getSpecificFiles(dirUnit, "cgs_" + unitID, ".csv");
-		sSheets = FileManagement.getSpecificFiles(dirUnit, "anime_" + unitID, ".png");
+		ProgramOutput.logMessage("Unit constructor: looking for files in the format [unit_anime_<unitID>.png]");
+		String[] temp = FileManagement.getSpecificFiles(dirUnit, "anime_" + unitID, ".png"); //at the very least, the sprite sheets should be unique
+		if(temp != null && temp.length == 2 && FileManagement.getSpecificFiles(unitDir, "_U.png", ".png").length == 1 && FileManagement.getSpecificFiles(unitDir, "_L.png", ".png").length == 1){	//summoner unit){
+			sSheets = new String[2];
+			sSheets[0] = FileManagement.getSpecificFile(unitDir, "_L.png", ".png");
+			sSheets[1] = FileManagement.getSpecificFile(unitDir, "_U.png", ".png");
+		}else{
+			sSheets = temp;
+		}
+		
+		ProgramOutput.logMessage("Unit constructor: looking for file in the format [unit_cgg_<unitID>.csv]");
+		cggFile = FileManagement.getSpecificFile(dirUnit, "cgg_", ".csv");
+		ProgramOutput.logMessage("Unit constructor: looking for files in the format [unit_<animType>_cgs_<unitID>.csv]");
+		if(!wikiMode)	cgsFiles = FileManagement.getSpecificFiles(dirUnit, "cgs_", ".csv");
+		else			cgsFiles = FileManagement.getSpecificFiles(dirUnit, "idle_cgs_", ".csv");
 		ProgramOutput.logMessage(this.toString());
 	}
 

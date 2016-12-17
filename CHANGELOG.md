@@ -1,9 +1,7 @@
 # Working Change Log (To be put into release notes when ready)
 
 ## TODO (will be moved to the change log section below as these are completed)
-* re-add-in wiki options in v2.0
-* check compatibility with summoner files in v2.0
-* remake (or re-add-in from previous version?) UI for program in v2.0
+* stretch goal: add in hit count animation
 * try to fix rotation issues on some units  
 * make comments JDocs compatible
 
@@ -21,7 +19,8 @@
  * this increases the time needed to make longer animations, but this is necessary to reduce memory issues
 * allow passing in of command line arguments (run JAR file with '-help' to see possible commands)
 * added a log file that contains information that is potentially useful for troubleshooting 
-
+* wiki related code is a lot less scattered class wise
+* option to disable UI via command line (only occurs if all directories are set)
 
 ## October 21, 2016
 * added numbers next to menu options to make last input clearer

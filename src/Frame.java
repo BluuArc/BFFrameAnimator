@@ -27,10 +27,8 @@ public class Frame{
 
 	private int frameNumber;
 	private int delay;
-	//private Part[] parts;
-	private Part[] parts; //array of filenames for parts
-	//private Picture2 sheets[];
-	private Picture2 image;
+	private Part[] parts;
+	private Picture2 image;	//one Picture2 object for every frame
 	private String fileName;
 
 	private class Part{
@@ -227,7 +225,7 @@ public class Frame{
 				}
 			}
 			partImage.write(partImageName);
-			ProgramOutput.logMessage("Frame$Part.createPartImage: created " + partImageName);
+			ProgramOutput.logMessage("Frame$Part.createPartImage: created " + FileManagement.getFilename(partImageName));
 			// if(flip != 0) partImage.write(FileChooser.getMediaDirectory() + "\\4shift.png");
 		}//end createPartImage
 
@@ -304,6 +302,7 @@ public class Frame{
 			image.setAllPixelsToAColor(Unit.getTransparentColor());
 			image.setAllPixelsToAnAlpha(0);
 			//generate all the parts
+			ProgramOutput.logMessage("Frame constructor: directory for all parts is :" + FileManagement.getDirectory(partPreName));
 			for(int i = 0; i < parts.length; ++i){
 				// System.out.println("Part " + i);
 				parts[i] = new Part(frameLine, parts.length - 1 - i, partPreName);
@@ -340,6 +339,46 @@ public class Frame{
 	public static void resetDimensionsAndLP(){
 		dimensions[0] = 0; dimensions[1] = 1;
 		lowestPoint = -1;
+	}
+	
+	public static int[] getLowestHighestFramePoints(Frame[] frames){
+		int[] points = new int[2]; //0 - low, 1 - high
+		int low = frames[0].getImage().getHeight() - 1;
+		int high = 0;
+		for(int i = 0; i < frames.length; ++i){
+			Picture2 currFrame = frames[i].getImage();
+			for(int y = 0; y < currFrame.getHeight(); ++y){
+				for(int x = 0; x < currFrame.getWidth(); ++x){
+					Pixel p = currFrame.getPixel(x, y);
+					if(p.getAlpha() > 0){ //ie there's something in the pixel
+						if(y > high)	high = y;
+						if(y < low)		low = y;
+					}
+				}
+			}//end for each pixel
+		}//end for each frame
+		points[0] = low;
+		points[1] = high;
+		return points;
+	}
+	
+	public static int[] getLowestHighestFramePoints(Picture2 strip){
+		int[] points = new int[2]; //0 - low, 1 - high
+		int low = strip.getHeight() - 1;
+		int high = 0;
+		//no need to split by frame since it's one big image
+		for(int y = 0; y < strip.getHeight(); ++y){
+			for(int x = 0; x < strip.getWidth(); ++x){
+				Pixel p = strip.getPixel(x, y);
+				if(p.getAlpha() > 0){ //ie there's something in the pixel
+					if(y > high)	high = y;
+					if(y < low)		low = y;
+				}
+			}
+		}//end for each pixel
+		points[0] = low;
+		points[1] = high;
+		return points;
 	}
 
 	//get max dimensions of a given set of frames and the lowest y point in the frames
@@ -434,15 +473,17 @@ public class Frame{
 			strip.getGraphics().drawImage((BufferedImage) currentPart.getImage(), startX, 0, null);
 		}//end for each part
 		strip.write(fName);
+		ProgramOutput.logMessage("Frame.saveParts: created " + fName);
 	}
 	
 	public void deleteParts(){
+		ProgramOutput.logMessage("Frame constructor: directory for all parts is :" + FileManagement.getDirectory(parts[0].getImage()));
 		for(int i = 0; i < parts.length; ++i){
 			File currentPart = new File(parts[i].getImage());
 			if(currentPart == null || !currentPart.delete()){
 				ProgramOutput.printLoggedMessage(false, "Error in Frame.deleteParts: Failed to delete [" + parts[i].getImage() + "]");
 			}else{
-				ProgramOutput.logMessage("Frame.deleteParts: deleted " + parts[i].getImage());
+				ProgramOutput.logMessage("Frame.deleteParts: deleted " + FileManagement.getFilename(parts[i].getImage()));
 			}
 		}
 		
