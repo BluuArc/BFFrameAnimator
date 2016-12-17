@@ -5,6 +5,9 @@
  *
  *	Started 12/2/2016
  * 
+ *	This program is licensed under the Creative Commons Attribution 3.0 United States License.
+ *	Visit https://github.com/BluuArc/BFFrameAnimator for updates.
+ * 
  *	@author Joshua Castor
  */
 
@@ -161,13 +164,26 @@ public class BFFrameMaker{
 	}
 	
 	/*methods*/
+	public static void printStartupMessage(boolean toLog){
+		String versionNum = "v2.0.0";
+		String updateDate =  "December 17, 2016";
+		
+		//header message
+		String license = "Welcome to BFFrameAnimator.\n";
+		license += "This program is licensed under the Creative Commons Attribution 3.0 United States License.\n";
+		license += "Visit https://github.com/BluuArc/BFFrameAnimator for updates and information.\n";
+		license += "This is version " + versionNum + ", which was last updated on " + updateDate + "\n---\n";
+		if(toLog) 	ProgramOutput.logMessage(license);
+		else		System.out.println(license);
+	}
 	public static void main(String[] args) {
+		BFFrameMaker.printStartupMessage(false);
 		BFFrameMaker program = new BFFrameMaker();
 		program.processCommands(args);
 		//program.test();
 		boolean done = true; //set for 1 menu loop minimum
 
-		//ask for input (via dialog?)
+		//ask for input if necessary
 		String list = program.getListPath();
 		if(program.getNumUnits() == 0){
 			try{
@@ -182,6 +198,8 @@ public class BFFrameMaker{
 		}
 		
 		ProgramOutput.initLog(program.getGifDir() + "\\BFFA-log.txt");
+		BFFrameMaker.printStartupMessage(true);
+		
 		ProgramOutput.debug("Log path: " + program.getGifDir() + "\\BFFA-log.txt");
 
 		ProgramOutput.logMessage("gifDir: " + program.getGifDir());
@@ -202,6 +220,7 @@ public class BFFrameMaker{
 		System.exit(0);
 	}
 	
+	//allow user to set animation options
 	public void setAnimOptions(){
 		boolean done = false;
 		ProgramOutput.printLoggedMessage(true, "Old options: " + options.toBooleanString());
@@ -215,6 +234,12 @@ public class BFFrameMaker{
 			else						options.setOpacity(SimpleInput.getYesNoOption("Do your strips use opacity?"));
 			if(!options.isStripMode())	options.setPartMode(SimpleInput.getYesNoOption("Would you like to save each frame as a part?")); //can't save individual parts from already made strips
 			done = SimpleInput.getYesNoOption("Your options are currently set to be " + options.toBooleanString() + "\nAre you sure you want to continue?");
+			if(!done){
+				if(SimpleInput.getYesNoOption("Would you like to exit?")){
+					ProgramOutput.closeLog();
+					System.exit(0);
+				}
+			}
 		}
 		ProgramOutput.printLoggedMessage(true, "New options: " + options.toBooleanString());
 	}
@@ -303,7 +328,7 @@ public class BFFrameMaker{
 					options += "-useStrip	flag to use already made strips in the units folders\n";
 					options += "-useOpacity	flag to use opacity creating directly from the spritesheet\n";
 					options += "-saveParts	option to save each frame as a strip of parts in the units folders\n";
-					options += "-list		file path to a text file containing a list of units\n";
+					options += "-list <path>	file path to a text file containing a list of units\n";
 					options += "-noGui		flag to not use any GUI to set creation options\n";
 					options += "-noGui(cont'd)	Note: if this flag is set, no GUI will be used assuming all other options are preset via command line arguments.\n"; 
 					options += "-help		show this message\n";
@@ -338,6 +363,7 @@ public class BFFrameMaker{
 		unitNums = FileManagement.getLines(list);
 	}
 	
+	//create units array from array of unit IDs
 	public Unit[] createUnitsArray(){
 		ProgramOutput.printLoggedMessage(true, "[entered createUnitsArray]");
 		ProgramOutput.printLoggedMessage(true, "createUnitsArray: checking that unitNum and options aren't null");
@@ -358,6 +384,7 @@ public class BFFrameMaker{
 		return arr;
 	}
 	
+	//process all units in current units array
 	public void processUnits(){
 		ProgramOutput.printLoggedMessage(true, "[entered processUnits]");
 		if(getNumUnits() == 0){
@@ -426,8 +453,8 @@ public class BFFrameMaker{
 	//common method used by makeUnitAnim and makeUnitStrip to initialize frames	
 	private void initializeFrames(Unit unit, int[][] cggParsed, String[] cgs, String animType, boolean useOpacity, boolean makeParts, boolean saveParts){
 		ProgramOutput.printLoggedMessage(true, "[entered initializeFrames]");
+		
 		//parse cgs file
-
 		ProgramOutput.printLoggedMessage(true, "initializeFrames: parsing CGS for " + unit.getID());
 		int[][] cgsParsed = new int[cgs.length][1];
 		for(int i = 0; i < cgs.length; ++i){
@@ -448,7 +475,7 @@ public class BFFrameMaker{
 			}
 		}
 
-		//create frames
+		//create and initialize frames
 		if(frames != null){
 			for(int i = 0; i < frames.length; ++i){
 				frames[i] = null;
@@ -495,7 +522,7 @@ public class BFFrameMaker{
 
 			initializeFrames(unit,cggParsed,cgs,animType,useOpacity, !stripMode, saveParts);// don't make parts if using strip
 
-			//save parts
+			//save parts if necessary
 			String opacType = (useOpacity) ? "opac" : "nopac";
 			if(!stripMode && saveParts){
 				ProgramOutput.printProgress("Saving each frame as a strip for " + animType + " of " + unit.getID() + ". Status: ",0, frames.length);
@@ -633,7 +660,7 @@ public class BFFrameMaker{
 			ProgramOutput.printLoggedMessage(true, "makeAnimFrames: using frames for generation");
 			
 			int height = frames[0].getImage().getHeight();
-			if(wikiMode){
+			if(wikiMode){//resize for wikiMode
 				int[] points = Frame.getLowestHighestFramePoints(frames);
 				int newHeight = points[1] - points[0]; //get "true" height
 				if(newHeight < 140){
@@ -679,7 +706,7 @@ public class BFFrameMaker{
 			origFrame = new Picture2(stripPath);
 			int frameWidth = origFrame.getWidth() / frames.length;
 			int frameHeight = origFrame.getHeight();
-			if(wikiMode){
+			if(wikiMode){//resize for wikiMode
 				int[] points = Frame.getLowestHighestFramePoints(origFrame);
 				int newHeight = points[1] - points[0]; //get "true" height
 				if(newHeight < 140){
@@ -831,9 +858,6 @@ public class BFFrameMaker{
 		ProgramOutput.printLoggedMessage(true, "[entered makeStrip]");
 		String stripName = u.getDirUnit() + "\\unit_" + getType(animType, false) + "_" 
 		+ u.getID() + "_" + animOption + ".png";
-
-		//String frameName = u.getDirGif() + "\\unit_" + u.getID() + "_" 
-		//+ animType + "-F";
 
 		//add each frame to strip
 		int frameWidth = frames[0].getImage().getWidth();

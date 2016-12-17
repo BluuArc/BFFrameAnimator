@@ -6,6 +6,9 @@
  *
  *	Started 12/2/2016
  * 
+ *	This program is licensed under the Creative Commons Attribution 3.0 United States License.
+ *	Visit https://github.com/BluuArc/BFFrameAnimator for updates.
+ *
  *	@author Joshua Castor
  */
 
@@ -33,7 +36,7 @@ public class Unit {
 		unitID = id;
 		dirUnit = unitDir;
 		ProgramOutput.logMessage("Unit constructor: looking for files in the format [unit_anime_<unitID>.png]");
-		String[] temp = FileManagement.getSpecificFiles(dirUnit, "anime_" + unitID, ".png"); //at the very least, the sprite sheets should be unique
+		String[] temp = FileManagement.getSpecificFiles(dirUnit, "anime_", ".png");
 		if(temp != null && temp.length == 2 && FileManagement.getSpecificFiles(unitDir, "_U.png", ".png").length == 1 && FileManagement.getSpecificFiles(unitDir, "_L.png", ".png").length == 1){	//summoner unit){
 			sSheets = new String[2];
 			sSheets[0] = FileManagement.getSpecificFile(unitDir, "_L.png", ".png");
@@ -97,6 +100,8 @@ public class Unit {
 		return errorList.isEmpty();
 	}
 	
+	@Override
+	//print all info related to unit into a String
 	public String toString(){
 		String output = unitID + ":\n";
 		output += "	dirUnit: " + dirUnit + "\n";

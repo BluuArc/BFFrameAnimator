@@ -1,8 +1,11 @@
 /**
- * Common functions between array stacks anf queues in Java
+ * Common functions between array stacks and queues in Java
  * 
  * Date: 11/29/2016
  * 
+ *	This program is licensed under the Creative Commons Attribution 3.0 United States License.
+ *	Visit https://github.com/BluuArc/BFFrameAnimator for updates.
+ *
  * @Author - Joshua Castor (jcasto3)
  * 
  */

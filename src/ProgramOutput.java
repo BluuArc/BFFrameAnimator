@@ -8,6 +8,9 @@ import java.io.PrintWriter;
  *
  *	Started 12/2/2016
  * 
+ *	This program is licensed under the Creative Commons Attribution 3.0 United States License.
+ *	Visit https://github.com/BluuArc/BFFrameAnimator for updates.
+ *
  *	@author Joshua Castor
  */
 

@@ -5,7 +5,7 @@
 * try to fix rotation issues on some units  
 * make comments JDocs compatible
 
-## December 2, 2016 to v2.0 Release Date (TBA)
+## December 2, 2016 to v2.0 Release Date (December 17, 2016)
 * almost complete rewrite of entire program to better fit OOP principles
 * cleaner and more concise output during program execution
 * error messages are now output if any errors were encountered per unit

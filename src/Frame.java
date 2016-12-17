@@ -6,6 +6,9 @@
  *
  *	Started 12/2/2016
  * 
+ *	This program is licensed under the Creative Commons Attribution 3.0 United States License.
+ *	Visit https://github.com/BluuArc/BFFrameAnimator for updates.
+ *
  *	@author Joshua Castor
  */
 
@@ -95,34 +98,19 @@ public class Frame{
 					int targetAlpha = a;
 					if(useOpacity){
 						targetAlpha = (int)(a * opacity);
-						// if((r+g+b) > 100) targetAlpha = (int)(targetAlpha * 2.0);
 					}
 
 					//set colors according to blend mode
 					if((blendMode == 1) && targetAlpha > 0){
 						//blend code based off of this: http://pastebin.com/vXc0yNRh
-						
 						double multiplier = 1.0 + (targetAlpha/255.0);//1.0 + (pixval/255.0)
 						if(r+g+b < 50)	continue;
-						// r += pixval;
-						// g += pixval;
-						// b += pixval;
 						r = (int)(r * multiplier);
 						g = (int)(g * multiplier);
 						b = (int)(b * multiplier);
 						int pixval = (r + g + b) / 3;
 						if(useOpacity){
 							targetAlpha = (int)(pixval * opacity);
-							//r = (int)(r * multiplier);
-							//g = (int)(g * multiplier);
-							//b = (int)(b * multiplier);
-							
-							// if(r > 200 && g > 200 && b > 200 && opacity < 0.5){
-							// 	targetAlpha /= 2;
-							// 	r /= 2;
-							// 	g /= 2;
-							// 	b /= 2;
-							// }
 						}//else
 							//targetAlpha = pixval;
 						
@@ -187,9 +175,7 @@ public class Frame{
 				//copy it back
 				tempImage.setAllPixelsToAnAlpha(0);
 				tempImage.getGraphics().drawImage((BufferedImage) partImage.getImage(), 0, 0, null);
-			}//else if(flip == 3){ //flip vertically and horizontally
-			//	partImage = rotateImage(180, partImage);
-			//}
+			}
 
 			//if(flip != 0) partImage.write(FileChooser.getMediaDirectory() + "\\3flip.png");
 
@@ -252,7 +238,7 @@ public class Frame{
 
 			//rotate/transform
 			Picture2 newImage = new Picture2(max, max);
-			double rotationRequired = Math.toRadians (angle);
+			double rotationRequired = Math.toRadians(angle);
 			double locationX = (double)max/2;
 			double locationY = (double)max/2;
 			AffineTransform tx = AffineTransform.getRotateInstance(rotationRequired, locationX, locationY);
@@ -302,12 +288,11 @@ public class Frame{
 			image.setAllPixelsToAColor(Unit.getTransparentColor());
 			image.setAllPixelsToAnAlpha(0);
 			//generate all the parts
+			ProgramOutput.logMessage("Frame constructor: Making " + parts.length + " parts");
 			ProgramOutput.logMessage("Frame constructor: directory for all parts is :" + FileManagement.getDirectory(partPreName));
 			for(int i = 0; i < parts.length; ++i){
-				// System.out.println("Part " + i);
 				parts[i] = new Part(frameLine, parts.length - 1 - i, partPreName);
 				parts[i].createPartImage(sSheets,x,y,useOpacity);
-				// parts[i].getImage().write(FileChooser.getMediaDirectory() + "\\part" + i + ".png");
 			}
 
 			for(Part p : parts){
@@ -315,16 +300,10 @@ public class Frame{
 				copyTo(image, partImage, y/2 - lowestPoint);
 			}
 			
-			if(!saveParts){
+			if(!saveParts){//delete since we don't need them later
 				deleteParts();
 			}
-
-			//further resize
-			// Picture2 tempImage = image;
-			// image = new Picture2(x, y - (y/2 - lowestPoint/2));
-			// image.getGraphics().drawImage((BufferedImage) tempImage.getImage(), 0, 0, null);
 		}
-
 	}
 
 	private void copyTo(Picture2 dest, Picture2 source, int diff){
@@ -341,6 +320,7 @@ public class Frame{
 		lowestPoint = -1;
 	}
 	
+	//get highest and lowest pixels in array of frames
 	public static int[] getLowestHighestFramePoints(Frame[] frames){
 		int[] points = new int[2]; //0 - low, 1 - high
 		int low = frames[0].getImage().getHeight() - 1;
@@ -362,6 +342,7 @@ public class Frame{
 		return points;
 	}
 	
+	//get highest and lowest pixels in array of frames in a strip
 	public static int[] getLowestHighestFramePoints(Picture2 strip){
 		int[] points = new int[2]; //0 - low, 1 - high
 		int low = strip.getHeight() - 1;
@@ -461,15 +442,6 @@ public class Frame{
 		for(int i = 0; i < parts.length; ++i){
 			currentPart = new Picture2(parts[i].getImage());
 			int startX = widthFrame * i;
-			// for(int y = 0; y < heightFrame; ++y){
-			// 	for(int x = 0; x < widthFrame; ++x){
-			// 		Pixel sourcePix = parts[i].getImage().getPixel(x,y);
-			// 		Pixel targetPix = strip.getPixel(x + startX, y);
-
-			// 		targetPix.setColor(sourcePix.getColor());
-			// 		targetPix.setAlpha(sourcePix.getAlpha());
-			// 	}
-			// }//end for each pixel
 			strip.getGraphics().drawImage((BufferedImage) currentPart.getImage(), startX, 0, null);
 		}//end for each part
 		strip.write(fName);
@@ -477,7 +449,8 @@ public class Frame{
 	}
 	
 	public void deleteParts(){
-		ProgramOutput.logMessage("Frame constructor: directory for all parts is :" + FileManagement.getDirectory(parts[0].getImage()));
+		ProgramOutput.logMessage("Frame.deleteParts: Deleting " + parts.length + " parts");
+		ProgramOutput.logMessage("Frame.deleteParts: directory for all parts is :" + FileManagement.getDirectory(parts[0].getImage()));
 		for(int i = 0; i < parts.length; ++i){
 			File currentPart = new File(parts[i].getImage());
 			if(currentPart == null || !currentPart.delete()){
