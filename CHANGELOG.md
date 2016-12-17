@@ -6,7 +6,7 @@
 * make comments JDocs compatible
 
 ## December 2, 2016 to v2.0 Release Date (December 17, 2016)
-* almost complete rewrite of entire program to better fit OOP principles
+* almost complete rewrite of entire program to better fit Object Oriented Principles
 * cleaner and more concise output during program execution
 * error messages are now output if any errors were encountered per unit
  * add in file checking to ensure that all files needed are available
@@ -18,7 +18,7 @@
 * parts created during frame creation process are now temporarily saved as individual parts
  * this increases the time needed to make longer animations, but this is necessary to reduce memory issues
 * allow passing in of command line arguments (run JAR file with '-help' to see possible commands)
-* added a log file that contains information that is potentially useful for troubleshooting 
+* added creation of a log file that contains information that is potentially useful for troubleshooting 
 * wiki related code is a lot less scattered class wise
 * option to disable UI via command line (only occurs if all directories are set)
 
