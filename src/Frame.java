@@ -458,7 +458,9 @@ public class Frame{
 			}else{
 				ProgramOutput.logMessage("Frame.deleteParts: deleted " + FileManagement.getFilename(parts[i].getImage()));
 			}
+			parts[i] = null;
 		}
+		parts = null;
 		
 	}
 
