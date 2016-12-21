@@ -5,6 +5,10 @@
 * try to fix rotation issues on some units  
 * make comments JDocs compatible
 
+## December 21, 2016
+* Improved exception handling so program doesn't halt upon encountering an error
+ * Exceptions are handled per CGS file per unit, which makes it easy to narrow down where the error occurred without stopping the program
+
 ## December 2, 2016 to v2.0 Release Date (December 17, 2016)
 * almost complete rewrite of entire program to better fit Object Oriented Principles
 * cleaner and more concise output during program execution

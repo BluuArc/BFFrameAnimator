@@ -84,43 +84,47 @@ public class Frame{
 			//copy part to center of image
 			for(y = 0; y < height; ++y){
 				for(x = 0; x < width; ++x){
-					sourcePix = sSheet.getPixel(spriteX + x, spriteY + y);
-					targetPix = tempImage.getPixel(startX + x, startY + y);
-
-					//get source color values
-					int r, g, b, a;
-					r = sourcePix.getRed();
-					g = sourcePix.getGreen();
-					b = sourcePix.getBlue();
-					a = sourcePix.getAlpha();
-
-					//set alpha/opacity
-					int targetAlpha = a;
-					if(useOpacity){
-						targetAlpha = (int)(a * opacity);
-					}
-
-					//set colors according to blend mode
-					if((blendMode == 1) && targetAlpha > 0){
-						//blend code based off of this: http://pastebin.com/vXc0yNRh
-						double multiplier = 1.0 + (targetAlpha/255.0);//1.0 + (pixval/255.0)
-						if(r+g+b < 50)	continue;
-						r = (int)(r * multiplier);
-						g = (int)(g * multiplier);
-						b = (int)(b * multiplier);
-						int pixval = (r + g + b) / 3;
+					try{
+						sourcePix = sSheet.getPixel(spriteX + x, spriteY + y);
+						targetPix = tempImage.getPixel(startX + x, startY + y);
+	
+						//get source color values
+						int r, g, b, a;
+						r = sourcePix.getRed();
+						g = sourcePix.getGreen();
+						b = sourcePix.getBlue();
+						a = sourcePix.getAlpha();
+	
+						//set alpha/opacity
+						int targetAlpha = a;
 						if(useOpacity){
-							targetAlpha = (int)(pixval * opacity);
-						}//else
-							//targetAlpha = pixval;
-						
-						if(r > 255)	r = 255;
-						if(g > 255)	g = 255;
-						if(b > 255)	b = 255;
+							targetAlpha = (int)(a * opacity);
+						}
+	
+						//set colors according to blend mode
+						if((blendMode == 1) && targetAlpha > 0){
+							//blend code based off of this: http://pastebin.com/vXc0yNRh
+							double multiplier = 1.0 + (targetAlpha/255.0);//1.0 + (pixval/255.0)
+							if(r+g+b < 50)	continue;
+							r = (int)(r * multiplier);
+							g = (int)(g * multiplier);
+							b = (int)(b * multiplier);
+							int pixval = (r + g + b) / 3;
+							if(useOpacity){
+								targetAlpha = (int)(pixval * opacity);
+							}//else
+								//targetAlpha = pixval;
+							
+							if(r > 255)	r = 255;
+							if(g > 255)	g = 255;
+							if(b > 255)	b = 255;
+						}
+	
+						targetPix.setColor(new Color(r,g,b));
+						targetPix.setAlpha(targetAlpha);
+					}catch(ArrayIndexOutOfBoundsException e){
+						continue;
 					}
-
-					targetPix.setColor(new Color(r,g,b));
-					targetPix.setAlpha(targetAlpha);
 				}
 			}//end for every pixel
 			//partImage.write(FileChooser.getMediaDirectory() + "\\1stcopy.png");

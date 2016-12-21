@@ -17,17 +17,23 @@ import java.io.PrintWriter;
 public class ProgramOutput{
 	public static String lastMessage;
 	private static PrintWriter log = null;
-	public static boolean debugMode = false;
-	public static boolean isLogging = false;
+	private static String logPath = null; 
+	private static boolean debugMode = false;
+	private static boolean isLogging = false;
 	
 	/*log methods*/
 	public static void initLog(String filePath){
 		try {
-			log = new PrintWriter(filePath);
+			logPath = filePath;
+			log = new PrintWriter(logPath);
 			isLogging = true;
 		} catch (FileNotFoundException e) {
 			System.out.println("Error in ProgramOutput.initLog: can't create/access " + filePath);
 		}
+	}
+	
+	public static String getLogPath(){
+		return logPath;
 	}
 	
 	public static void logException(Exception e){

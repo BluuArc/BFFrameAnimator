@@ -216,7 +216,7 @@ public class BFFrameMaker{
 				done = !(SimpleInput.getYesNoOption("Would you like to generate another set of images and/or GIFs?"));
 		}while(!done);
 		ProgramOutput.closeLog();
-		ProgramOutput.debug("Log path: " + program.getGifDir() + "\\BFFA-log.txt");
+		System.out.println("See [" + ProgramOutput.getLogPath() + "] if any errors occured.");
 		System.exit(0);
 	}
 	
@@ -439,10 +439,10 @@ public class BFFrameMaker{
 				makeUnitAnim(unit, o.isOpac(), o.doSaveParts(), o.isStripMode(), o.isWikiMode());
 			}
 			
-		}catch(NullPointerException e){
-			ProgramOutput.printLoggedMessage(false, "NullPointerException encountered in animation process");
+		}catch(Exception e){
+			ProgramOutput.printLoggedMessage(false, "Exception encountered in animation process with " + unit.getID());
 			ProgramOutput.logException(e);
-			unit.addError("NullPointerException encountered in animation process");
+			unit.addError("Exception encountered in animation process");
 		}
 		if(!unit.noErrors()){
 			unit.addError("Options for previous messages are " + o.toBooleanString());
@@ -512,46 +512,51 @@ public class BFFrameMaker{
 		for(int c = 0; c < cgsFiles.length; ++c){
 			//read cgs file
 			String currCGS = cgsFiles[c];
-			String[] cgs = FileManagement.getLines(currCGS);
-			if(cgs == null){
-				unit.addError("CGS file error");
-			}
-
-			String animType = getType(currCGS, true);
-			ProgramOutput.printLoggedMessage(false, "\n{" + unit.getID() + " - " + animType + " - GIF}");
-
-			initializeFrames(unit,cggParsed,cgs,animType,useOpacity, !stripMode, saveParts);// don't make parts if using strip
-
-			//save parts if necessary
-			String opacType = (useOpacity) ? "opac" : "nopac";
-			if(!stripMode && saveParts){
-				ProgramOutput.printProgress("Saving each frame as a strip for " + animType + " of " + unit.getID() + ". Status: ",0, frames.length);
-				for(int i = 0; i < frames.length; ++i){
-					frames[i].saveParts(unit.getDirUnit() + "\\unit_" + unit.getID() + "_" + animType + "_" + opacType + "_F" + i + "_parts.png");
-					ProgramOutput.printProgress(null,i+1,frames.length);
+			try{
+				String[] cgs = FileManagement.getLines(currCGS);
+				if(cgs == null){
+					unit.addError("CGS file error");
 				}
-				
-				//delete parts since they aren't needed anymore
-				for(Frame f : frames){
-					f.deleteParts();
+	
+				String animType = getType(currCGS, true);
+				ProgramOutput.printLoggedMessage(false, "\n{" + unit.getID() + " - " + animType + " - GIF}");
+	
+				initializeFrames(unit,cggParsed,cgs,animType,useOpacity, !stripMode, saveParts);// don't make parts if using strip
+	
+				//save parts if necessary
+				String opacType = (useOpacity) ? "opac" : "nopac";
+				if(!stripMode && saveParts){
+					ProgramOutput.printProgress("Saving each frame as a strip for " + animType + " of " + unit.getID() + ". Status: ",0, frames.length);
+					for(int i = 0; i < frames.length; ++i){
+						frames[i].saveParts(unit.getDirUnit() + "\\unit_" + unit.getID() + "_" + animType + "_" + opacType + "_F" + i + "_parts.png");
+						ProgramOutput.printProgress(null,i+1,frames.length);
+					}
+					
+					//delete parts since they aren't needed anymore
+					for(Frame f : frames){
+						f.deleteParts();
+					}
 				}
-			}
-
-			//generate GIF based on stripMode variable
-			String stripPath = null;
-			if(stripMode){ // look for strip
-				ProgramOutput.printLoggedMessage(true, "makeUnitAnim: looking for strip in the format of [unit_" + getType(animType,false) + "_" 
-					+ unit.getID() + "_" + opacType + ".png]");
-				stripPath = FileManagement.getSpecificFile(unit.getDirUnit(), "unit_" + getType(animType,false) + "_" 
-					+ unit.getID() + "_" + opacType, ".png");
-				if(stripPath == null){ // no strip, note error and continue to next unit
-					unit.addError("Error in BFFrameMaker.makeUnitAnim: missing " + "unit_" + getType(animType,false) + "_" 
-					+ unit.getID() + "_" + opacType + ".png");
-					continue;
+	
+				//generate GIF based on stripMode variable
+				String stripPath = null;
+				if(stripMode){ // look for strip
+					ProgramOutput.printLoggedMessage(true, "makeUnitAnim: looking for strip in the format of [unit_" + getType(animType,false) + "_" 
+						+ unit.getID() + "_" + opacType + ".png]");
+					stripPath = FileManagement.getSpecificFile(unit.getDirUnit(), "unit_" + getType(animType,false) + "_" 
+						+ unit.getID() + "_" + opacType, ".png");
+					if(stripPath == null){ // no strip, note error and continue to next unit
+						unit.addError("Error in BFFrameMaker.makeUnitAnim: missing " + "unit_" + getType(animType,false) + "_" 
+						+ unit.getID() + "_" + opacType + ".png");
+						continue;
+					}
 				}
+				makeGif(unit, wikiMode, animType, opacType, stripPath);
+			}catch(Exception e){
+				ProgramOutput.printLoggedMessage(false, "Exception encountered in animation process with " + FileManagement.getFilename(currCGS));
+				ProgramOutput.logException(e);
+				unit.addError("Exception encountered in animation process with " + FileManagement.getFilename(currCGS));
 			}
-			makeGif(unit, wikiMode, animType, opacType, stripPath);
-			
 		}//end for each cgs
 		ProgramOutput.printLoggedMessage(true, "[left makeUnitAnim]");
 	}
@@ -575,33 +580,39 @@ public class BFFrameMaker{
 		for(int c = 0; c < cgsFiles.length; ++c){
 			//read cgs file
 			String currCGS = cgsFiles[c];
-			String[] cgs = FileManagement.getLines(currCGS);
-			if(cgs == null){
-				unit.addError("CGS file error");
-			}
-
-			String animType = getType(currCGS, false);
-			ProgramOutput.printLoggedMessage(false, "\n{" + unit.getID() + " - " + animType + " - Strip}");
-
-			initializeFrames(unit,cggParsed,cgs,animType,useOpacity, true, saveParts); //always create parts
-			
-			//save parts
-			String opacType = (useOpacity) ? "opac" : "nopac";
-			if(saveParts){
-				ProgramOutput.printProgress("Saving each frame as a strip for " + animType + " of " + unit.getID() + ". Status: ",0, frames.length);
-				for(int i = 0; i < frames.length; ++i){
-					frames[i].saveParts(unit.getDirUnit() + "\\unit_" + unit.getID() + "_" + animType + "_" + opacType + "_F" + i + "_parts.png");
-					ProgramOutput.printProgress(null,i+1,frames.length);
+			try{
+				String[] cgs = FileManagement.getLines(currCGS);
+				if(cgs == null){
+					unit.addError("CGS file error");
+				}
+	
+				String animType = getType(currCGS, false);
+				ProgramOutput.printLoggedMessage(false, "\n{" + unit.getID() + " - " + animType + " - Strip}");
+	
+				initializeFrames(unit,cggParsed,cgs,animType,useOpacity, true, saveParts); //always create parts
+				
+				//save parts
+				String opacType = (useOpacity) ? "opac" : "nopac";
+				if(saveParts){
+					ProgramOutput.printProgress("Saving each frame as a strip for " + animType + " of " + unit.getID() + ". Status: ",0, frames.length);
+					for(int i = 0; i < frames.length; ++i){
+						frames[i].saveParts(unit.getDirUnit() + "\\unit_" + unit.getID() + "_" + animType + "_" + opacType + "_F" + i + "_parts.png");
+						ProgramOutput.printProgress(null,i+1,frames.length);
+					}
+					
+					//delete parts since they aren't needed anymore
+					for(Frame f : frames){
+						f.deleteParts();
+					}
 				}
 				
-				//delete parts since they aren't needed anymore
-				for(Frame f : frames){
-					f.deleteParts();
-				}
+	
+				makeStrip(unit, animType, opacType);
+			}catch(Exception e){
+				ProgramOutput.printLoggedMessage(false, "Exception encountered in animation process with " + FileManagement.getFilename(currCGS));
+				ProgramOutput.logException(e);
+				unit.addError("Exception encountered in animation process with " + FileManagement.getFilename(currCGS));
 			}
-			
-
-			makeStrip(unit, animType, opacType);
 		}
 		ProgramOutput.printLoggedMessage(true, "[left makeUnitStrip]");
 	}
