@@ -292,7 +292,7 @@ public class Frame{
 			image.setAllPixelsToAColor(Unit.getTransparentColor());
 			image.setAllPixelsToAnAlpha(0);
 			//generate all the parts
-			ProgramOutput.logMessage("Frame constructor: Making " + parts.length + " parts");
+			ProgramOutput.logMessage("Frame constructor: Making " + parts.length + " parts for frame " + frameNumber);
 			ProgramOutput.logMessage("Frame constructor: directory for all parts is :" + FileManagement.getDirectory(partPreName));
 			for(int i = 0; i < parts.length; ++i){
 				parts[i] = new Part(frameLine, parts.length - 1 - i, partPreName);
@@ -454,6 +454,7 @@ public class Frame{
 	
 	public void deleteParts(){
 		ProgramOutput.logMessage("Frame.deleteParts: Deleting " + parts.length + " parts");
+		if(parts.length == 0) return; //ignore "empty" frames
 		ProgramOutput.logMessage("Frame.deleteParts: directory for all parts is :" + FileManagement.getDirectory(parts[0].getImage()));
 		for(int i = 0; i < parts.length; ++i){
 			File currentPart = new File(parts[i].getImage());
