@@ -41,19 +41,21 @@ public class BFFrameMaker{
 		private boolean stripMode;	//use animation strip
 		private boolean makeStrip;	//create animation strip
 		private boolean wikiMode;	//create with height of 140px minimum
+		private boolean shrinkMode; //option to remove bordering whitespace in an animation
 		private String gifDir;		//dir of all gifs
 		private String unitDir; 	//dir of all units
 	
 		public CreationOptions(){
-			this(false, false, false, false, false, null, null);
+			this(false, false, false, false, false, false, null, null);
 		}
 	
-		public CreationOptions(boolean opac, boolean parts, boolean stripMo, boolean makeSt, boolean wikiMo, String gDir, String uDir){
+		public CreationOptions(boolean opac, boolean parts, boolean stripMo, boolean makeSt, boolean wikiMo, boolean shrinkMo, String gDir, String uDir){
 			useOpacity = opac;
 			saveParts = parts;
 			stripMode = stripMo;
 			makeStrip = makeSt;
 			wikiMode = wikiMo;
+			shrinkMode = shrinkMo;
 			
 			gifDir = gDir;
 			unitDir = uDir;
@@ -91,13 +93,22 @@ public class BFFrameMaker{
 			return makeStrip;
 		}
 		
+		public void setShrinkMode(boolean b){
+			shrinkMode = b;
+		}
+		
+		public boolean doShrink(){
+			return shrinkMode;
+		}
+		
 		public String toBooleanString(){
 			String output = "[";
 			output += (useOpacity) ? "useOpacity," : "!useOpacity,";
 			output += (saveParts) ? "saveParts," : "!saveParts,";
 			output += (stripMode) ? "stripMode," : "!stripMode,";
 			output += (makeStrip) ? "makeStrip," : "!makeStrip,";
-			output += (wikiMode) ? "wikiMode" : "!wikiMode";
+			output += (wikiMode) ? "wikiMode," : "!wikiMode,";
+			output += (shrinkMode) ? "shrinkMode" : "!shrinkMode";
 			output += "]";
 			return output;
 		}
@@ -165,8 +176,8 @@ public class BFFrameMaker{
 	
 	/*methods*/
 	public static void printStartupMessage(boolean toLog){
-		String versionNum = "v2.0.0";
-		String updateDate =  "December 17, 2016";
+		String versionNum = "v2.1.0";
+		String updateDate =  "December 25, 2016";
 		
 		//header message
 		String license = "Welcome to BFFrameAnimator.\n";
@@ -180,7 +191,6 @@ public class BFFrameMaker{
 		BFFrameMaker.printStartupMessage(false);
 		BFFrameMaker program = new BFFrameMaker();
 		program.processCommands(args);
-		//program.test();
 		boolean done = true; //set for 1 menu loop minimum
 
 		//ask for input if necessary
@@ -227,11 +237,12 @@ public class BFFrameMaker{
 		while(!done){
 			options.setMakeStrip(SimpleInput.getYesNoOption("Would you like to create animation strips?\n(Select No to create GIFs instead)"));
 			if(!options.doMakeStrip()){
-				options.setWikiMode(SimpleInput.getYesNoOption("Would you like to create wiki GIFs?"));
+				options.setWikiMode(SimpleInput.getYesNoOption("Would you like to create wiki GIFs?\n(Select No to create all animations instead)"));
 				options.setStripMode(SimpleInput.getYesNoOption("Would you like to use already made strips in your animations?"));
 			}
 			if(!options.isStripMode()) 	options.setOpacity(SimpleInput.getYesNoOption("Would you like to use opacity?"));
 			else						options.setOpacity(SimpleInput.getYesNoOption("Do your strips use opacity?"));
+			if(!options.isWikiMode() && !options.doMakeStrip())	options.setShrinkMode(SimpleInput.getYesNoOption("Would you like to remove the whitespace around animations (experimental)?"));
 			if(!options.isStripMode())	options.setPartMode(SimpleInput.getYesNoOption("Would you like to save each frame as a part?")); //can't save individual parts from already made strips
 			done = SimpleInput.getYesNoOption("Your options are currently set to be " + options.toBooleanString() + "\nAre you sure you want to continue?");
 			if(!done){
@@ -256,49 +267,6 @@ public class BFFrameMaker{
 		return listPath;
 	}
 	
-	//used for debugging and development
-	public void test(){
-		String unitDir = "";
-		try{
-			unitDir = FileManagement.getDirectory(FileChooser.pickAFile());
-			FileManagement.setDirectory(unitDir);
-			// System.out.println(unitDir);
-		}catch(NullPointerException e){
-			System.out.println("Null input. Exiting.");
-			ProgramOutput.logException(e);
-			ProgramOutput.closeLog();
-			System.exit(-1);
-		}
-		ProgramOutput.debug("test: Creating unit");
-		
-		//create new unit and options
-		processCommands(null);
-		String unitID = "11016";
-		Unit unit = new Unit(unitID, options.getGifDir(), options.getUnitDir() + "\\" + unitID, false);
-		
-		options.setOpacity(false);
-		options.setPartMode(false);
-		options.setStripMode(false);
-		options.setMakeStrip(false);
-		
-		processUnit(unit,options); //default is nopac gif
-		
-		options.setOpacity(true);
-		options.setMakeStrip(true);
-		
-		//create and animate opac strip
-		processUnit(unit,options);
-		options.setMakeStrip(false);
-		processUnit(unit,options);
-		
-		if(!unit.noErrors()){
-			ProgramOutput.printLoggedMessage(false, "\nThe following errors were encountered:");
-			unit.printErrors();
-		}
-
-		System.exit(0);
-	}
-
 	//process command line input
 	private void processCommands(String[] args){
 		//sample path input: "C:\\folder1\\folder2\\Units\\50017"
@@ -312,6 +280,7 @@ public class BFFrameMaker{
 				if(args[i].equals("-useStrip"))		o.setStripMode(true);
 				if(args[i].equals("-useOpacity"))	o.setOpacity(true);
 				if(args[i].equals("-saveParts"))	o.setPartMode(true);
+				if(args[i].equals("-doShrink"))		o.setShrinkMode(true);
 				if(args[i].equals("-noGui"))		useGUI = false;
 				if(args[i].equals("-debug"))		ProgramOutput.setDebugMode(true);
 				if(args[i].equals("-list")){
@@ -331,6 +300,7 @@ public class BFFrameMaker{
 					options += "-list <path>	file path to a text file containing a list of units\n";
 					options += "-noGui		flag to not use any GUI to set creation options\n";
 					options += "-noGui(cont'd)	Note: if this flag is set, no GUI will be used assuming all other options are preset via command line arguments.\n"; 
+					options += "-doShrink	remove most of the whitespace around animations; experimental feature\n"; 
 					options += "-help		show this message\n";
 					System.out.println(options);
 					System.exit(0);
@@ -436,7 +406,7 @@ public class BFFrameMaker{
 			if(o.doMakeStrip()){//make a strip
 				makeUnitStrip(unit, o.isOpac(), o.doSaveParts());
 			}else{//make a gif
-				makeUnitAnim(unit, o.isOpac(), o.doSaveParts(), o.isStripMode(), o.isWikiMode());
+				makeUnitAnim(unit, o.isOpac(), o.doSaveParts(), o.isStripMode(), o.isWikiMode(), o.doShrink());
 			}
 			
 		}catch(Exception e){
@@ -494,7 +464,7 @@ public class BFFrameMaker{
 	}
 
 	//animate from spritesheet or a strip
-	public void makeUnitAnim(Unit unit, boolean useOpacity, boolean saveParts, boolean stripMode, boolean wikiMode){
+	public void makeUnitAnim(Unit unit, boolean useOpacity, boolean saveParts, boolean stripMode, boolean wikiMode, boolean shrinkMode){
 		ProgramOutput.printLoggedMessage(true, "[entered makeUnitAnim]");
 		String[] cgg = FileManagement.getLines(unit.getCGG());
 		if(cgg == null){
@@ -551,7 +521,7 @@ public class BFFrameMaker{
 						continue;
 					}
 				}
-				makeGif(unit, wikiMode, animType, opacType, stripPath);
+				makeGif(unit, wikiMode, animType, opacType, stripPath, shrinkMode);
 			}catch(Exception e){
 				ProgramOutput.printLoggedMessage(false, "Exception encountered in animation process with " + FileManagement.getFilename(currCGS));
 				ProgramOutput.logException(e);
@@ -661,26 +631,44 @@ public class BFFrameMaker{
 		return type;
 	}
 
-	private void makeAnimFrames(Unit u, String preName, Color transparentColor, String stripPath, boolean wikiMode){
+	private void makeAnimFrames(Unit u, String preName, Color transparentColor, String stripPath, boolean wikiMode, boolean shrinkMode){
 		ProgramOutput.printLoggedMessage(true, "[entered makeAnimFrames]");
 		Picture2 origFrame, animFrame;
 		int limitingAlpha = 100;
 		int startYSource = 0;
 		int startYTarget = 0;
+		int startXSource = 0;
+		int startXTarget = 0;
 		if(stripPath == null){
 			ProgramOutput.printLoggedMessage(true, "makeAnimFrames: using frames for generation");
 			
 			int height = frames[0].getImage().getHeight();
-			if(wikiMode){//resize for wikiMode
+			int width = frames[0].getImage().getWidth();
+			if(wikiMode || shrinkMode){//resize for wikiMode
 				int[] points = Frame.getLowestHighestFramePoints(frames);
 				int newHeight = points[1] - points[0]; //get "true" height
-				if(newHeight < 140){
-					startYTarget = 140 - newHeight - 1;
-					newHeight = 140;	//minimum height is 140 px
+				if(wikiMode){
+					if(newHeight < 140){
+						startYTarget = 140 - newHeight - 1;
+						newHeight = 140;	//minimum height is 140 px
+					}
+					else				u.addError("Warning in makeAnimFrames: newHeight is " + newHeight);
 				}
-				else				u.addError("Warning in makeAnimFrames: newHeight is " + newHeight);
 				startYSource = points[0];
 				height = newHeight;
+				
+				startXSource = points[2];
+				width = points[3] - points[2];
+				
+				//round width to next ten
+				int mod = width % 10;
+				if(mod != 0){
+					startXTarget = (10 - mod) / 2;
+					width += 10 - mod;
+				}else{
+					startXTarget = 5;
+					width += 10;
+				}
 			}
 			
 			ProgramOutput.printProgress("Saving frames for GIF creation. Status: ", 0, frames.length);
@@ -688,14 +676,14 @@ public class BFFrameMaker{
 				origFrame = frames[i].getImage();
 
 				//copy frame onto new picture object with transparent color background
-				animFrame = new Picture2(origFrame.getWidth(), height);
+				animFrame = new Picture2(width, height);
 				animFrame.setAllPixelsToAColor(transparentColor);
 				animFrame.setAllPixelsToAnAlpha(255);
 				for(int y = 0; y < height; ++y){
-					for(int x = 0; x < animFrame.getWidth(); ++x){
+					for(int x = 0; x < width; ++x){
 						try{
-							Pixel sourcePix = origFrame.getPixel(x,startYSource + y);
-							Pixel targetPix = animFrame.getPixel(x,startYTarget + y);
+							Pixel sourcePix = origFrame.getPixel(startXSource + x,startYSource + y);
+							Pixel targetPix = animFrame.getPixel(startXTarget + x,startYTarget + y);
 							if(sourcePix.getAlpha() > limitingAlpha){	
 								targetPix.setColor(sourcePix.getColor());
 								targetPix.setAlpha(sourcePix.getAlpha());
@@ -717,29 +705,47 @@ public class BFFrameMaker{
 			origFrame = new Picture2(stripPath);
 			int frameWidth = origFrame.getWidth() / frames.length;
 			int frameHeight = origFrame.getHeight();
-			if(wikiMode){//resize for wikiMode
-				int[] points = Frame.getLowestHighestFramePoints(origFrame);
+			int newWidth = frameWidth;
+			if(wikiMode || shrinkMode){//resize for wikiMode
+				int[] points = Frame.getLowestHighestFramePoints(frames, origFrame);
 				int newHeight = points[1] - points[0]; //get "true" height
-				if(newHeight < 140){
-					startYTarget = 140 - newHeight - 1;
-					newHeight = 140;	//minimum height is 140 px
+				if(wikiMode){
+					if(newHeight < 140){
+						startYTarget = 140 - newHeight - 1;
+						newHeight = 140;	//minimum height is 140 px
+					}
+					else				u.addError("Warning in makeAnimFrames: newHeight is " + newHeight);
 				}
-				else				u.addError("Warning in makeAnimFrames: newHeight is " + newHeight);
 				startYSource = points[0];
 				frameHeight = newHeight;
+				
+				startXSource = points[2];
+				newWidth = points[3] - points[2];
+				
+				//round newWidth to next ten
+				int mod = newWidth % 10;
+				if(mod != 0){
+					startXTarget = (10 - mod) / 2;
+					newWidth += (10 - mod);
+				}else{
+					startXTarget = 5;
+					newWidth += 10;
+				}
 			}
+			//ProgramOutput.logMessage("BFFrameMaker.makeAnimFrames: newWidth is " + newWidth + " and frameWidth is " + frameWidth);
 			
 			//copy each part of strip into separate frames
 			ProgramOutput.printProgress("Separating frames from strip for GIF creation. Status: ", 0, frames.length);
 			for(int i = 0; i < frames.length; ++i){
-				animFrame = new Picture2(frameWidth, frameHeight);
+				animFrame = new Picture2(newWidth, frameHeight);
 				animFrame.setAllPixelsToAColor(transparentColor);
 				animFrame.setAllPixelsToAnAlpha(255);
+				int startX = (i * frameWidth) + startXSource;
 				for(int y = 0; y < frameHeight; ++y){
-					for(int x = 0; x < frameWidth; ++x){
+					for(int x = 0; x < newWidth; ++x){
 						try{
-							Pixel sourcePix = origFrame.getPixel(frameWidth * i + x,startYSource + y);
-							Pixel targetPix = animFrame.getPixel(x,startYTarget + y);
+							Pixel sourcePix = origFrame.getPixel(startX + x,startYSource + y);
+							Pixel targetPix = animFrame.getPixel(startXTarget + x,startYTarget + y);
 							if(sourcePix.getAlpha() > limitingAlpha){	
 								targetPix.setColor(sourcePix.getColor());
 								targetPix.setAlpha(sourcePix.getAlpha());
@@ -763,19 +769,20 @@ public class BFFrameMaker{
 
 	//method to make a GIF from images
 	@SuppressWarnings("static-access")
-	private String makeGif(Unit u, boolean wikiMode, String animType, String animOption, String stripPath){
+	private String makeGif(Unit u, boolean wikiMode, String animType, String animOption, String stripPath, boolean shrinkMode){
 		ProgramOutput.printLoggedMessage(true, "[entered makeGif]");
 		String gifName = u.getDirGif();
 		if(!wikiMode)	gifName += "\\unit_" + u.getID() + "_" + animType + "_" + animOption;
 		else			gifName += "\\unit_ills_anime_" + u.getID() + "_" + animOption;
 		if(stripPath != null)	gifName += "_strip";
+		if(shrinkMode)	gifName += "_shrink";
 		gifName += ".gif";
 
 		String frameName = u.getDirGif() + "\\unit_" + u.getID() + "_" 
 		+ animType + "-F";
 
 		//save all frames with transparent background
-		makeAnimFrames(u, frameName, u.getTransparentColor(), stripPath, wikiMode);
+		makeAnimFrames(u, frameName, u.getTransparentColor(), stripPath, wikiMode, shrinkMode);
 
 		//create gif from saved frames
 		AnimatedGifEncoder g = new AnimatedGifEncoder();

@@ -5,9 +5,15 @@
 * try to fix rotation issues on some units  
 * make comments JDocs compatible
 
-## December 21, 2016
-* Improved exception handling so program doesn't halt upon encountering an error
+## December 21, 2016 to December 25, 2016 (v2.1.0 Release)
+* General Tune-Up: Improved exception handling so program doesn't halt upon encountering an error
  * Exceptions are handled per CGS file per unit, which makes it easy to narrow down where the error occurred without stopping the program
+* Bugfix: fixed bug where frames with 0 parts would skip the animation or stop the program
+* General Tune-Up: removed test function
+* New Feature: added experimental shrink mode feature
+ * this removes the whitespace around the animation; in other words, it shrinks the border around an animation to be closest to the farthest pixels
+ * this is experimental as some animations were glitchy as a result of this in v1.x
+ * by default, this is enabled for wiki GIFs as the feature was derived from the algorithm for wiki GIFs
 
 ## December 2, 2016 to v2.0 Release Date (December 17, 2016)
 * almost complete rewrite of entire program to better fit Object Oriented Principles

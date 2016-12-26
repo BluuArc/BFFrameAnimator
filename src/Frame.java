@@ -326,43 +326,59 @@ public class Frame{
 	
 	//get highest and lowest pixels in array of frames
 	public static int[] getLowestHighestFramePoints(Frame[] frames){
-		int[] points = new int[2]; //0 - low, 1 - high
+		int[] points = new int[4]; //0 - low, 1 - high, 2 - left, 3 - right
 		int low = frames[0].getImage().getHeight() - 1;
 		int high = 0;
+		int left = frames[0].getImage().getWidth() - 1;
+		int right = 0;
 		for(int i = 0; i < frames.length; ++i){
 			Picture2 currFrame = frames[i].getImage();
 			for(int y = 0; y < currFrame.getHeight(); ++y){
 				for(int x = 0; x < currFrame.getWidth(); ++x){
 					Pixel p = currFrame.getPixel(x, y);
-					if(p.getAlpha() > 0){ //ie there's something in the pixel
+					if(p.getAlpha() > 5){ //ie there's something in the pixel
 						if(y > high)	high = y;
 						if(y < low)		low = y;
+						if(x < left)	left = x;
+						if(x > right)	right = x;
 					}
 				}
 			}//end for each pixel
 		}//end for each frame
 		points[0] = low;
 		points[1] = high;
+		points[2] = left;
+		points[3] = right;
 		return points;
 	}
 	
 	//get highest and lowest pixels in array of frames in a strip
-	public static int[] getLowestHighestFramePoints(Picture2 strip){
-		int[] points = new int[2]; //0 - low, 1 - high
+	public static int[] getLowestHighestFramePoints(Frame[] frames, Picture2 strip){
+		int[] points = new int[4]; //0 - low, 1 - high, 2 - left, 3 - right
 		int low = strip.getHeight() - 1;
 		int high = 0;
-		//no need to split by frame since it's one big image
-		for(int y = 0; y < strip.getHeight(); ++y){
-			for(int x = 0; x < strip.getWidth(); ++x){
-				Pixel p = strip.getPixel(x, y);
-				if(p.getAlpha() > 0){ //ie there's something in the pixel
-					if(y > high)	high = y;
-					if(y < low)		low = y;
+		int frameWidth = strip.getWidth() / frames.length;
+		int left = frameWidth - 1;
+		int right = 0;
+		//need to split by frame to get left and right variables
+		for(int f = 0; f < frames.length; ++f){
+			int startX = f * frameWidth;
+			for(int y = 0; y < strip.getHeight(); ++y){
+				for(int x = 0; x < frameWidth; ++x){
+					Pixel p = strip.getPixel(startX + x, y);
+					if(p.getAlpha() > 5){ //ie there's something in the pixel
+						if(y > high)	high = y;
+						if(y < low)		low = y;
+						if(x < left)	left = x;
+						if(x > right)	right = x;
+					}
 				}
-			}
-		}//end for each pixel
+			}//end for each pixel
+		}//end for each frame
 		points[0] = low;
 		points[1] = high;
+		points[2] = left;
+		points[3] = right;
 		return points;
 	}
 
