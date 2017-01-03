@@ -127,7 +127,7 @@ public class Frame{
 					}
 				}
 			}//end for every pixel
-			//partImage.write(FileChooser.getMediaDirectory() + "\\1stcopy.png");
+			//partImage.write(FileChooser.getMediaDirectory() + File.separator + "1stcopy.png");
 
 			//apply rotation
 			if(rotate != 0){
@@ -137,7 +137,7 @@ public class Frame{
 					newHeight = width;
 				}
 
-				// partImage.write(FileChooser.getMediaDirectory() + "\\2rotate.png");
+				// partImage.write(FileChooser.getMediaDirectory() + File.separator + "2rotate.png");
 			}
 
 			//apply flips to image; 0 = no flip, 1 = flip horiz, 2 = flip vert, 3 = flip both
@@ -181,7 +181,7 @@ public class Frame{
 				tempImage.getGraphics().drawImage((BufferedImage) partImage.getImage(), 0, 0, null);
 			}
 
-			//if(flip != 0) partImage.write(FileChooser.getMediaDirectory() + "\\3flip.png");
+			//if(flip != 0) partImage.write(FileChooser.getMediaDirectory() + File.separator + "3flip.png");
 
 			//prep variables for image shift
 			int partStartX = centerX + frameX; //coords of top left of frame on image
@@ -216,7 +216,7 @@ public class Frame{
 			}
 			partImage.write(partImageName);
 			ProgramOutput.logMessage("Frame$Part.createPartImage: created " + FileManagement.getFilename(partImageName));
-			// if(flip != 0) partImage.write(FileChooser.getMediaDirectory() + "\\4shift.png");
+			// if(flip != 0) partImage.write(FileChooser.getMediaDirectory() + File.separator + "4shift.png");
 		}//end createPartImage
 
 		//rotate an image about it's center
@@ -238,7 +238,7 @@ public class Frame{
 					targetPix.setAlpha(sourcePix.getAlpha());
 				}
 			}
-			// tempImage.write(FileChooser.getMediaDirectory() + "\\2rotate-norotate.png");
+			// tempImage.write(FileChooser.getMediaDirectory() + File.separator + "2rotate-norotate.png");
 
 			//rotate/transform
 			Picture2 newImage = new Picture2(max, max);
@@ -250,7 +250,7 @@ public class Frame{
 
 			// Drawing the rotated image at the required drawing locations
 			newImage.getGraphics().drawImage(op.filter((BufferedImage) tempImage.getImage(), null), 0, 0, null);
-			// newImage.write(FileChooser.getMediaDirectory() + "\\2rotate-noshift.png");
+			// newImage.write(FileChooser.getMediaDirectory() + File.separator + "2rotate-noshift.png");
 		
 			//resize to original dimensions
 			//tempImage = null;
@@ -265,7 +265,7 @@ public class Frame{
 					targetPix.setAlpha(sourcePix.getAlpha());
 				}
 			}
-			// newImage.write(FileChooser.getMediaDirectory() + "\\2rotate-func.png");
+			// newImage.write(FileChooser.getMediaDirectory() + File.separator + "2rotate-func.png");
 
 			//return newImage;
 		}//end rotateImage
@@ -281,7 +281,7 @@ public class Frame{
 		delay = (int)((cgs[lineNumber][3] / 60.0) * 1000);
 		int[] frameLine = cgg[frameNumber];	//cgg has info for that numbered frame
 		parts = new Part[frameLine[1]];		//initialize array of parts
-		fileName = FileChooser.getMediaDirectory() + "\\test.png"; //can't use prename since frames will be saved in gif directory
+		fileName = FileChooser.getMediaDirectory() + File.separator + "test.png"; //can't use prename since frames will be saved in gif directory
 
 		//create empty frame image
 		if(makeParts){

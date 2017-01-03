@@ -13,6 +13,7 @@
  */
 
 import java.awt.Color;
+import java.io.File;
 
 public class Unit {
 	//same for all units
@@ -106,20 +107,20 @@ public class Unit {
 		String output = unitID + ":\n";
 		output += "	dirUnit: " + dirUnit + "\n";
 		output += "	dirGif: " + dirGif + "\n";
-		if(cggFile != null)	output += " cgg: dirUnit\\" + FileManagement.getFilename(cggFile) + "\n";
+		if(cggFile != null)	output += " cgg: dirUnit" + File.separator + FileManagement.getFilename(cggFile) + "\n";
 		else				output += "	cgg: null\n";
 		if(cgsFiles != null){
-			output += " cgs: dirUnit\\" + FileManagement.getFilename(cgsFiles[0]);
+			output += " cgs: dirUnit" + File.separator + FileManagement.getFilename(cgsFiles[0]);
 			for(int i = 1; i < cgsFiles.length; ++i)
-				output += ",dirUnit\\" + FileManagement.getFilename(cgsFiles[i]);
+				output += ",dirUnit" + File.separator + FileManagement.getFilename(cgsFiles[i]);
 		}else{
 			output += "	cgs: null";
 		}
 
 		if(sSheets != null){
-			output += "\n	sSheets: dirUnit\\" + FileManagement.getFilename(sSheets[0]);
+			output += "\n	sSheets: dirUnit" + File.separator + FileManagement.getFilename(sSheets[0]);
 			for(int i = 1; i < sSheets.length; ++i)
-				output += ",dirUnit\\" + FileManagement.getFilename(sSheets[i]);
+				output += ",dirUnit" + File.separator + FileManagement.getFilename(sSheets[i]);
 		}else{
 			output += "\n	sSheets: null";
 		}

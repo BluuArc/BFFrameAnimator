@@ -101,7 +101,7 @@ public class FileManagement{
 			//copy temp array into resized output array
 			output = new String[count];
 			for(int i = 0; i < count; ++i){
-				output[i] = dir + "\\" + temp[i];
+				output[i] = dir + File.separator + temp[i];
 			}
 		}
 		
