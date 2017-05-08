@@ -2,10 +2,13 @@
 
 ## TODO (will be moved to the change log section below as these are completed)
 * stretch goal: add in hit count animation
-* try to fix rotation issues on some units  
+* try to fix rotation issues on some units
 * make comments JDocs compatible
 
-## January 3, 2016 (v2.1.1 Release)
+## May 8, 2018 (v2.1.2 Release)
+* New Feature: Added wikiMode option to command line
+
+## January 3, 2017 (v2.1.1 Release)
 * Bugfix: fixed bug where program would not work properly on Unix environments
 
 ## December 21, 2016 to December 25, 2016 (v2.1.0 Release)

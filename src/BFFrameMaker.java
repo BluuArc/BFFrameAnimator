@@ -176,8 +176,8 @@ public class BFFrameMaker{
 	
 	/*methods*/
 	public static void printStartupMessage(boolean toLog){
-		String versionNum = "v2.1.1";
-		String updateDate =  "January 3, 2016";
+		String versionNum = "v2.1.2";
+		String updateDate =  "May 8, 2017";
 		
 		//header message
 		String license = "Welcome to BFFrameAnimator.\n";
@@ -187,6 +187,7 @@ public class BFFrameMaker{
 		if(toLog) 	ProgramOutput.logMessage(license);
 		else		System.out.println(license);
 	}
+	
 	public static void main(String[] args) {
 		BFFrameMaker.printStartupMessage(false);
 		BFFrameMaker program = new BFFrameMaker();
@@ -281,6 +282,7 @@ public class BFFrameMaker{
 				if(args[i].equals("-useOpacity"))	o.setOpacity(true);
 				if(args[i].equals("-saveParts"))	o.setPartMode(true);
 				if(args[i].equals("-doShrink"))		o.setShrinkMode(true);
+				if(args[i].equals("-wikiMode"))		o.setWikiMode(true);
 				if(args[i].equals("-noGui"))		useGUI = false;
 				if(args[i].equals("-debug"))		ProgramOutput.setDebugMode(true);
 				if(args[i].equals("-list")){
@@ -297,6 +299,7 @@ public class BFFrameMaker{
 					options += "-useStrip	flag to use already made strips in the units folders\n";
 					options += "-useOpacity	flag to use opacity creating directly from the spritesheet\n";
 					options += "-saveParts	option to save each frame as a strip of parts in the units folders\n";
+					options += "-wikiMode	flag to create wiki GIFs\n";
 					options += "-list <path>	file path to a text file containing a list of units\n";
 					options += "-noGui		flag to not use any GUI to set creation options\n";
 					options += "-noGui(cont'd)	Note: if this flag is set, no GUI will be used assuming all other options are preset via command line arguments.\n"; 
