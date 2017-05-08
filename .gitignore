@@ -5,3 +5,5 @@ bin/SimplePictureProperties.txt
 .project
 bin/Debug.class
 test-commands.txt
+bin/v1.x/*
+src/v1.x/*
